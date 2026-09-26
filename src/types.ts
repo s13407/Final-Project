@@ -1,6 +1,6 @@
 export type CALIPSDimension = 'C' | 'A' | 'L' | 'I' | 'P' | 'S';
 
-export type ThemeVibe = 'cosmic' | 'electric' | 'emerald';
+export type ThemeVibe = 'sunset' | 'eclipse' | 'tokyo' | 'electric' | 'abyss';
 
 export interface CategoryInfo {
   code: CALIPSDimension;

@@ -52,7 +52,7 @@ export const AssessmentQuiz: React.FC<AssessmentQuizProps> = ({
   const answeredCount = Object.keys(answers).length;
   const progressPercent = Math.round((answeredCount / CALIPS_QUESTIONS.length) * 100);
 
-  const isDark = vibe === 'cosmic' || vibe === 'emerald';
+  const isDark = vibe !== 'electric';
 
   // Keyboard navigation for quick answers (T = True, F = False)
   useEffect(() => {

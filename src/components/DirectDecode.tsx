@@ -58,7 +58,7 @@ export const DirectDecode: React.FC<DirectDecodeProps> = ({
   const [customCity, setCustomCity] = useState('');
   const [matchResult, setMatchResult] = useState<DirectInterestMatch | null>(null);
 
-  const isDark = vibe === 'cosmic' || vibe === 'emerald';
+  const isDark = vibe !== 'electric';
 
   const handleDecode = (e: React.FormEvent) => {
     e.preventDefault();

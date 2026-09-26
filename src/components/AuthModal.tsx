@@ -44,7 +44,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   if (!isOpen) return null;
 
-  const isDark = vibe === 'cosmic' || vibe === 'emerald';
+  const isDark = vibe !== 'electric';
   const { isConfigured: isSupabaseConfigured } = getStoredSupabaseConfig();
 
   const handleSubmit = async (e: React.FormEvent) => {

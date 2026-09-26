@@ -25,7 +25,7 @@ export const CareerLibrary: React.FC<CareerLibraryProps> = ({
   const [activeTab, setActiveTab] = useState<CALIPSDimension>('C');
 
   const category = CALIPS_CATEGORIES[activeTab];
-  const isDark = vibe === 'cosmic' || vibe === 'emerald';
+  const isDark = vibe !== 'electric';
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">

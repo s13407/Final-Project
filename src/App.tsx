@@ -30,10 +30,14 @@ export default function App() {
     'home' | 'quiz' | 'direct' | 'universities' | 'careers' | 'dashboard'
   >('home');
 
-  // Aesthetic Theme Vibe: default to 'cosmic' (electric obsidian neon) or student preference
+  // Aesthetic Theme Vibe: default to 'eclipse' (Solar Eclipse) or student preference
   const [vibe, setVibe] = useState<ThemeVibe>(() => {
-    const saved = localStorage.getItem('pathcode_theme_vibe') as ThemeVibe;
-    return saved === 'electric' || saved === 'emerald' ? saved : 'cosmic';
+    const saved = localStorage.getItem('pathcode_theme_vibe');
+    if (saved === 'abyss') return 'eclipse';
+    if (saved === 'eclipse' || saved === 'sunset' || saved === 'tokyo' || saved === 'electric') {
+      return saved as ThemeVibe;
+    }
+    return 'eclipse';
   });
 
   const [currentUser, setCurrentUser] = useState<StudentProfile | null>(null);
@@ -167,10 +171,12 @@ export default function App() {
 
   // Determine container classes according to active vibe
   const containerClasses =
-    vibe === 'cosmic'
-      ? 'bg-[#090D16] text-slate-100 cosmic-mesh selection:bg-purple-500/30 selection:text-purple-200'
-      : vibe === 'emerald'
-      ? 'bg-[#07110F] text-slate-100 emerald-mesh selection:bg-emerald-500/30 selection:text-emerald-200'
+    vibe === 'eclipse' || vibe === 'abyss'
+      ? 'bg-[#090A10] text-slate-100 eclipse-mesh selection:bg-amber-500/30 selection:text-amber-200'
+      : vibe === 'sunset'
+      ? 'bg-[#0D0B1A] text-slate-100 sunset-mesh selection:bg-rose-500/30 selection:text-rose-200'
+      : vibe === 'tokyo'
+      ? 'bg-[#0B0817] text-slate-100 tokyo-mesh selection:bg-fuchsia-500/30 selection:text-fuchsia-200'
       : 'bg-[#F8FAFC] text-slate-900 electric-mesh selection:bg-indigo-500/20 selection:text-indigo-950';
 
   return (
@@ -201,8 +207,8 @@ export default function App() {
                   <button
                     onClick={() => setCurrentResult(null)}
                     className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold border transition-colors ${
-                      vibe === 'cosmic' || vibe === 'emerald'
-                        ? 'bg-white/10 border-white/15 text-purple-300 hover:bg-white/15'
+                      vibe !== 'electric'
+                        ? 'bg-white/10 border-white/15 text-slate-200 hover:bg-white/15'
                         : 'bg-white border-slate-200 text-indigo-700 hover:bg-slate-50'
                     }`}
                   >
@@ -210,7 +216,7 @@ export default function App() {
                   </button>
                   <span
                     className={`text-xs font-semibold px-3 py-1 rounded-full border ${
-                      vibe === 'cosmic' || vibe === 'emerald'
+                      vibe !== 'electric'
                         ? 'bg-white/5 border-white/10 text-slate-300'
                         : 'bg-white border-slate-200 text-slate-600'
                     }`}

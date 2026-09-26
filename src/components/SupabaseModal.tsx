@@ -47,7 +47,7 @@ export const SupabaseModal: React.FC<SupabaseModalProps> = ({
 
   if (!isOpen) return null;
 
-  const isDark = vibe === 'cosmic' || vibe === 'emerald';
+  const isDark = vibe !== 'electric';
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();

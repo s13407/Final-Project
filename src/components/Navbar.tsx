@@ -3,13 +3,9 @@ import { StudentProfile, ThemeVibe } from '../types';
 import {
   Compass,
   Sparkles,
-  User,
   Database,
   LogOut,
-  MapPin,
-  Moon,
-  Sun,
-  Palette
+  MapPin
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -35,37 +31,96 @@ export const Navbar: React.FC<NavbarProps> = ({
   vibe,
   onSelectVibe
 }) => {
-  const isDark = vibe === 'cosmic' || vibe === 'emerald';
+  const isDark = vibe !== 'electric';
 
-  const vibes: { id: ThemeVibe; name: string; emoji: string; color: string }[] = [
-    { id: 'cosmic', name: 'Cosmic Neon', emoji: '🔮', color: 'from-purple-500 to-indigo-500' },
-    { id: 'electric', name: 'Electric Pop', emoji: '⚡', color: 'from-blue-500 to-pink-500' },
-    { id: 'emerald', name: 'Cyber Mint', emoji: '🌿', color: 'from-emerald-500 to-teal-500' }
+  const vibes: { id: ThemeVibe; name: string; emoji: string; tag: string }[] = [
+    { id: 'eclipse', name: 'Solar Eclipse', emoji: '🌘', tag: 'Molten 24K Gold & Obsidian Velvet' },
+    { id: 'sunset', name: 'Velvet Sunset', emoji: '🌅', tag: 'Coral, Amber & Orchid Dusk' },
+    { id: 'tokyo', name: 'Tokyo Midnight', emoji: '🌆', tag: 'Electric Violet & Cyber Fuchsia' },
+    { id: 'electric', name: 'Daylight Pop', emoji: '⚡', tag: 'Clean White & Jewel Tones' }
   ];
+
+  // Dynamic branding accents
+  const brandGradient =
+    vibe === 'eclipse' || vibe === 'abyss'
+      ? 'from-amber-300 via-yellow-200 to-amber-500'
+      : vibe === 'sunset'
+      ? 'from-rose-400 via-amber-300 to-purple-400'
+      : vibe === 'tokyo'
+      ? 'from-violet-400 via-fuchsia-300 to-pink-400'
+      : 'from-indigo-600 via-purple-600 to-pink-500';
+
+  const brandIconBg =
+    vibe === 'eclipse' || vibe === 'abyss'
+      ? 'from-amber-500 via-yellow-500 to-amber-600 text-slate-950'
+      : vibe === 'sunset'
+      ? 'from-rose-500 via-amber-500 to-purple-600 text-white'
+      : vibe === 'tokyo'
+      ? 'from-violet-500 via-fuchsia-500 to-pink-600 text-white'
+      : 'from-indigo-500 via-purple-500 to-pink-500 text-white';
+
+  const activeLinkClass =
+    vibe === 'eclipse' || vibe === 'abyss'
+      ? 'text-amber-300 font-extrabold'
+      : vibe === 'sunset'
+      ? 'text-rose-300 font-extrabold'
+      : vibe === 'tokyo'
+      ? 'text-fuchsia-300 font-extrabold'
+      : 'text-indigo-600 font-extrabold';
+
+  const activeLineBg =
+    vibe === 'eclipse' || vibe === 'abyss'
+      ? 'from-amber-400 to-yellow-300'
+      : vibe === 'sunset'
+      ? 'from-rose-500 via-amber-400 to-purple-500'
+      : vibe === 'tokyo'
+      ? 'from-violet-500 to-fuchsia-500'
+      : 'from-indigo-500 to-pink-500';
+
+  const headerBgClass =
+    vibe === 'eclipse' || vibe === 'abyss'
+      ? 'bg-[#090A10]/90 border-amber-500/15 shadow-[0_4px_30px_rgba(245,158,11,0.08)]'
+      : vibe === 'sunset'
+      ? 'bg-[#0D0B1A]/85 border-white/10 shadow-[0_4px_30px_rgba(244,63,94,0.08)]'
+      : vibe === 'tokyo'
+      ? 'bg-[#0B0817]/85 border-white/10 shadow-[0_4px_30px_rgba(168,85,247,0.08)]'
+      : 'bg-white/90 border-slate-200/80 shadow-[0_4px_20px_-2px_rgba(99,102,241,0.08)]';
 
   return (
     <header
-      className={`sticky top-0 z-40 w-full border-b backdrop-blur-xl transition-all ${
-        isDark
-          ? 'bg-[#090D16]/85 border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.5)]'
-          : 'bg-white/90 border-slate-200/80 shadow-[0_4px_20px_-2px_rgba(99,102,241,0.08)]'
-      }`}
+      className={`sticky top-0 z-40 w-full border-b backdrop-blur-xl transition-all duration-300 ${headerBgClass}`}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* Brand Wordmark with Neon Spark */}
+        {/* Brand Wordmark */}
         <button
           onClick={() => setActiveTab('home')}
           className="group flex items-center gap-3 text-left focus:outline-none"
         >
-          <div className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/30 transition-transform group-hover:scale-105">
+          <div
+            className={`relative flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr ${brandIconBg} shadow-lg transition-transform group-hover:scale-105`}
+          >
             <Compass className="h-5 w-5" />
-            <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 opacity-30 blur-sm -z-10 group-hover:opacity-60 transition-opacity" />
+            <div
+              className={`absolute -inset-0.5 rounded-2xl bg-gradient-to-r ${brandIconBg} opacity-30 blur-sm -z-10 group-hover:opacity-70 transition-opacity`}
+            />
           </div>
           <div>
-            <span className="font-display text-2xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">
+            <span
+              className={`font-display text-2xl font-extrabold tracking-tight bg-gradient-to-r ${brandGradient} bg-clip-text text-transparent`}
+            >
               PathCode
             </span>
-            <span className="hidden sm:block text-[10px] font-bold tracking-widest uppercase text-purple-400 -mt-1">
+            <span
+              className={`hidden sm:block text-[10px] font-bold tracking-widest uppercase -mt-1 ${
+                vibe === 'eclipse' || vibe === 'abyss'
+                  ? 'text-amber-400'
+                  : vibe === 'sunset'
+                  ? 'text-rose-400'
+                  : vibe === 'tokyo'
+                  ? 'text-fuchsia-400'
+                  : 'text-indigo-500'
+              }`}
+            >
               Decode Your Direction
             </span>
           </div>
@@ -81,9 +136,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={() => setActiveTab('home')}
             className={`transition-colors py-1 relative ${
               activeTab === 'home'
-                ? isDark
-                  ? 'text-purple-300 font-extrabold'
-                  : 'text-indigo-600 font-extrabold'
+                ? activeLinkClass
                 : isDark
                 ? 'hover:text-white'
                 : 'hover:text-indigo-600'
@@ -91,16 +144,16 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             Home
             {activeTab === 'home' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500 to-pink-500 rounded-full" />
+              <span
+                className={`absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r ${activeLineBg} rounded-full`}
+              />
             )}
           </button>
           <button
             onClick={() => setActiveTab('quiz')}
             className={`transition-colors py-1 relative ${
               activeTab === 'quiz'
-                ? isDark
-                  ? 'text-purple-300 font-extrabold'
-                  : 'text-indigo-600 font-extrabold'
+                ? activeLinkClass
                 : isDark
                 ? 'hover:text-white'
                 : 'hover:text-indigo-600'
@@ -108,16 +161,16 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             CALIPS Assessment
             {activeTab === 'quiz' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500 to-pink-500 rounded-full" />
+              <span
+                className={`absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r ${activeLineBg} rounded-full`}
+              />
             )}
           </button>
           <button
             onClick={() => setActiveTab('direct')}
             className={`transition-colors py-1 relative ${
               activeTab === 'direct'
-                ? isDark
-                  ? 'text-purple-300 font-extrabold'
-                  : 'text-indigo-600 font-extrabold'
+                ? activeLinkClass
                 : isDark
                 ? 'hover:text-white'
                 : 'hover:text-indigo-600'
@@ -125,16 +178,16 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             I Know My Interest
             {activeTab === 'direct' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500 to-pink-500 rounded-full" />
+              <span
+                className={`absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r ${activeLineBg} rounded-full`}
+              />
             )}
           </button>
           <button
             onClick={() => setActiveTab('universities')}
             className={`transition-colors py-1 relative ${
               activeTab === 'universities'
-                ? isDark
-                  ? 'text-purple-300 font-extrabold'
-                  : 'text-indigo-600 font-extrabold'
+                ? activeLinkClass
                 : isDark
                 ? 'hover:text-white'
                 : 'hover:text-indigo-600'
@@ -142,16 +195,16 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             Universities
             {activeTab === 'universities' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500 to-pink-500 rounded-full" />
+              <span
+                className={`absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r ${activeLineBg} rounded-full`}
+              />
             )}
           </button>
           <button
             onClick={() => setActiveTab('careers')}
             className={`transition-colors py-1 relative ${
               activeTab === 'careers'
-                ? isDark
-                  ? 'text-purple-300 font-extrabold'
-                  : 'text-indigo-600 font-extrabold'
+                ? activeLinkClass
                 : isDark
                 ? 'hover:text-white'
                 : 'hover:text-indigo-600'
@@ -159,7 +212,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             Career Library
             {activeTab === 'careers' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500 to-pink-500 rounded-full" />
+              <span
+                className={`absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r ${activeLineBg} rounded-full`}
+              />
             )}
           </button>
           {currentUser && (
@@ -167,9 +222,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => setActiveTab('dashboard')}
               className={`transition-colors py-1 relative ${
                 activeTab === 'dashboard'
-                  ? isDark
-                    ? 'text-purple-300 font-extrabold'
-                    : 'text-indigo-600 font-extrabold'
+                  ? activeLinkClass
                   : isDark
                   ? 'hover:text-white'
                   : 'hover:text-indigo-600'
@@ -177,7 +230,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               Dashboard
               {activeTab === 'dashboard' && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500 to-pink-500 rounded-full" />
+                <span
+                  className={`absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r ${activeLineBg} rounded-full`}
+                />
               )}
             </button>
           )}
@@ -185,33 +240,38 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Right Side: Vibe Switcher + Supabase DB Badge + User Profile */}
         <div className="flex items-center gap-2.5 sm:gap-3">
-          {/* Aesthetic Vibe Switcher */}
+          {/* Aesthetic Vibe Selector */}
           <div
             className={`flex items-center p-1 rounded-full border transition-all ${
-              isDark
-                ? 'bg-white/5 border-white/10'
-                : 'bg-slate-100 border-slate-200'
+              isDark ? 'bg-white/5 border-white/10' : 'bg-slate-100 border-slate-200'
             }`}
           >
-            {vibes.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => onSelectVibe(item.id)}
-                title={`Switch vibe to ${item.name}`}
-                className={`flex items-center gap-1 rounded-full px-2 sm:px-2.5 py-1 text-[11px] font-bold transition-all ${
-                  vibe === item.id
-                    ? isDark
-                      ? 'bg-purple-600/80 text-white shadow-xs'
-                      : 'bg-white text-indigo-700 shadow-xs'
-                    : isDark
-                    ? 'text-slate-400 hover:text-white'
-                    : 'text-slate-500 hover:text-slate-900'
-                }`}
-              >
-                <span>{item.emoji}</span>
-                <span className="hidden xl:inline">{item.name}</span>
-              </button>
-            ))}
+            {vibes.map((item) => {
+              const isSelected = vibe === item.id || (vibe === 'abyss' && item.id === 'eclipse');
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => onSelectVibe(item.id)}
+                  title={item.tag}
+                  className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold transition-all ${
+                    isSelected
+                      ? item.id === 'eclipse'
+                        ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-black shadow-xs'
+                        : item.id === 'sunset'
+                        ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-xs'
+                        : item.id === 'tokyo'
+                        ? 'bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white shadow-xs'
+                        : 'bg-white text-indigo-700 shadow-xs'
+                      : isDark
+                      ? 'text-slate-400 hover:text-white'
+                      : 'text-slate-500 hover:text-slate-900'
+                  }`}
+                >
+                  <span>{item.emoji}</span>
+                  <span className="hidden xl:inline">{item.name}</span>
+                </button>
+              );
+            })}
           </div>
 
           {/* Supabase Live DB Pill */}
@@ -238,7 +298,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               className={`h-2 w-2 rounded-full ${
                 isSupabaseConnected
                   ? 'bg-emerald-400 ring-2 ring-emerald-400/40 animate-pulse'
-                  : 'bg-purple-400'
+                  : 'bg-amber-400'
               }`}
             />
           </button>
@@ -254,15 +314,21 @@ export const Navbar: React.FC<NavbarProps> = ({
                     : 'bg-slate-100 border-slate-200 text-slate-800 hover:bg-slate-200'
                 }`}
               >
-                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 text-white text-[10px] font-bold">
+                <div
+                  className={`flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-tr ${brandIconBg} text-[10px] font-bold`}
+                >
                   {currentUser.name.charAt(0).toUpperCase()}
                 </div>
                 <span className="max-w-[90px] truncate">{currentUser.name}</span>
                 {currentUser.preferredCountry && (
                   <span
                     className={`hidden sm:flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full ${
-                      isDark
-                        ? 'bg-purple-500/20 text-purple-300'
+                      vibe === 'eclipse' || vibe === 'abyss'
+                        ? 'bg-amber-500/20 text-amber-300'
+                        : vibe === 'sunset'
+                        ? 'bg-rose-500/20 text-rose-300'
+                        : vibe === 'tokyo'
+                        ? 'bg-fuchsia-500/20 text-fuchsia-300'
                         : 'bg-indigo-100 text-indigo-700'
                     }`}
                   >
@@ -286,7 +352,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           ) : (
             <button
               onClick={onOpenAuth}
-              className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 px-4 py-1.5 text-xs font-bold text-white shadow-md shadow-purple-500/30 hover:opacity-95 active:scale-95 transition-all"
+              className={`flex items-center gap-1.5 rounded-full bg-gradient-to-r ${brandIconBg} px-4 py-1.5 text-xs font-bold shadow-md hover:opacity-95 active:scale-95 transition-all`}
             >
               <Sparkles className="h-3.5 w-3.5" />
               <span>Student Sign In</span>
@@ -298,81 +364,49 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* Mobile Quick Bar */}
       <div
         className={`flex lg:hidden overflow-x-auto border-t px-4 py-2 text-xs font-bold gap-4 no-scrollbar ${
-          isDark
-            ? 'bg-[#090D16]/95 border-white/10 text-slate-300'
+          vibe === 'eclipse' || vibe === 'abyss'
+            ? 'bg-[#090A10]/95 border-amber-500/15 text-slate-300'
+            : vibe === 'sunset'
+            ? 'bg-[#0D0B1A]/95 border-white/10 text-slate-300'
+            : vibe === 'tokyo'
+            ? 'bg-[#0B0817]/95 border-white/10 text-slate-300'
             : 'bg-white/95 border-slate-200 text-slate-600'
         }`}
       >
         <button
           onClick={() => setActiveTab('home')}
-          className={`whitespace-nowrap ${
-            activeTab === 'home'
-              ? isDark
-                ? 'text-purple-300 font-extrabold'
-                : 'text-indigo-600 font-extrabold'
-              : ''
-          }`}
+          className={`whitespace-nowrap ${activeTab === 'home' ? activeLinkClass : ''}`}
         >
           Home
         </button>
         <button
           onClick={() => setActiveTab('quiz')}
-          className={`whitespace-nowrap ${
-            activeTab === 'quiz'
-              ? isDark
-                ? 'text-purple-300 font-extrabold'
-                : 'text-indigo-600 font-extrabold'
-              : ''
-          }`}
+          className={`whitespace-nowrap ${activeTab === 'quiz' ? activeLinkClass : ''}`}
         >
           CALIPS Quiz
         </button>
         <button
           onClick={() => setActiveTab('direct')}
-          className={`whitespace-nowrap ${
-            activeTab === 'direct'
-              ? isDark
-                ? 'text-purple-300 font-extrabold'
-                : 'text-indigo-600 font-extrabold'
-              : ''
-          }`}
+          className={`whitespace-nowrap ${activeTab === 'direct' ? activeLinkClass : ''}`}
         >
           Know Interest
         </button>
         <button
           onClick={() => setActiveTab('universities')}
-          className={`whitespace-nowrap ${
-            activeTab === 'universities'
-              ? isDark
-                ? 'text-purple-300 font-extrabold'
-                : 'text-indigo-600 font-extrabold'
-              : ''
-          }`}
+          className={`whitespace-nowrap ${activeTab === 'universities' ? activeLinkClass : ''}`}
         >
           Universities
         </button>
         <button
           onClick={() => setActiveTab('careers')}
-          className={`whitespace-nowrap ${
-            activeTab === 'careers'
-              ? isDark
-                ? 'text-purple-300 font-extrabold'
-                : 'text-indigo-600 font-extrabold'
-              : ''
-          }`}
+          className={`whitespace-nowrap ${activeTab === 'careers' ? activeLinkClass : ''}`}
         >
           Career Library
         </button>
         {currentUser && (
           <button
             onClick={() => setActiveTab('dashboard')}
-            className={`whitespace-nowrap ${
-              activeTab === 'dashboard'
-                ? isDark
-                  ? 'text-purple-300 font-extrabold'
-                  : 'text-indigo-600 font-extrabold'
-                : ''
-            }`}
+            className={`whitespace-nowrap ${activeTab === 'dashboard' ? activeLinkClass : ''}`}
           >
             Dashboard
           </button>

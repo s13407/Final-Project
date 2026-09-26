@@ -36,7 +36,7 @@ export const UniversityExplorer: React.FC<UniversityExplorerProps> = ({
   const [selectedCountry, setSelectedCountry] = useState<string>(preferredCountry || 'ALL');
   const [selectedCity, setSelectedCity] = useState<string>(preferredCity || 'ALL');
 
-  const isDark = vibe === 'cosmic' || vibe === 'emerald';
+  const isDark = vibe !== 'electric';
 
   const countries = ['ALL', ...Array.from(new Set(UNIVERSITY_PROGRAMS.map((p) => p.country)))];
 

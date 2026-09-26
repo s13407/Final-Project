@@ -54,7 +54,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [newCountry, setNewCountry] = useState(currentUser.preferredCountry || 'Pakistan');
   const [newCity, setNewCity] = useState(currentUser.preferredCity || 'Karachi');
 
-  const isDark = vibe === 'cosmic' || vibe === 'emerald';
+  const isDark = vibe !== 'electric';
   const { supabaseUrl } = getStoredSupabaseConfig();
 
   const handleCopySql = () => {

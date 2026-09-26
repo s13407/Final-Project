@@ -60,7 +60,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
   );
   const [showAllUniversities, setShowAllUniversities] = useState(false);
 
-  const isDark = vibe === 'cosmic' || vibe === 'emerald';
+  const isDark = vibe !== 'electric';
 
   const top3Codes = result.pathCode.split('') as CALIPSDimension[];
   const primaryCat = CALIPS_CATEGORIES[top3Codes[0]];

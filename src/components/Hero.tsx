@@ -2,16 +2,12 @@ import React from 'react';
 import { ThemeVibe } from '../types';
 import {
   ArrowRight,
-  Compass,
   Search,
   Sparkles,
-  BookOpen,
   GraduationCap,
   ShieldCheck,
   MapPin,
-  Heart,
-  Database,
-  CheckCircle2
+  Database
 } from 'lucide-react';
 
 interface HeroProps {
@@ -24,21 +20,52 @@ interface HeroProps {
 export const Hero: React.FC<HeroProps> = ({
   onStartQuiz,
   onStartDirect,
-  onExploreUniversities,
   vibe
 }) => {
-  const isDark = vibe === 'cosmic' || vibe === 'emerald';
+  const isDark = vibe !== 'electric';
+
+  const auraGradient =
+    vibe === 'eclipse' || vibe === 'abyss'
+      ? 'from-amber-600/35 via-yellow-500/25 to-orange-600/30'
+      : vibe === 'sunset'
+      ? 'from-rose-600/35 via-amber-500/25 to-purple-600/30'
+      : vibe === 'tokyo'
+      ? 'from-violet-600/35 via-fuchsia-500/25 to-indigo-600/30'
+      : 'from-indigo-600/30 via-purple-600/20 to-pink-500/25';
+
+  const headlineGradient =
+    vibe === 'eclipse' || vibe === 'abyss'
+      ? 'from-amber-200 via-yellow-300 to-amber-500'
+      : vibe === 'sunset'
+      ? 'from-rose-400 via-amber-300 to-purple-400'
+      : vibe === 'tokyo'
+      ? 'from-violet-400 via-fuchsia-300 to-pink-400'
+      : 'from-indigo-600 via-purple-600 to-pink-500';
+
+  const button1Gradient =
+    vibe === 'eclipse' || vibe === 'abyss'
+      ? 'from-amber-400 via-yellow-400 to-amber-500 text-slate-950 font-black'
+      : vibe === 'sunset'
+      ? 'from-rose-500 via-amber-500 to-purple-600 text-white'
+      : vibe === 'tokyo'
+      ? 'from-violet-500 via-fuchsia-500 to-pink-600 text-white'
+      : 'from-indigo-600 via-purple-600 to-pink-500 text-white';
+
+  const button2Gradient =
+    vibe === 'eclipse' || vibe === 'abyss'
+      ? 'from-yellow-400 via-amber-500 to-orange-500 text-slate-950 font-black'
+      : vibe === 'sunset'
+      ? 'from-amber-500 via-rose-500 to-purple-600 text-white'
+      : vibe === 'tokyo'
+      ? 'from-fuchsia-500 via-pink-500 to-violet-600 text-white'
+      : 'from-cyan-500 via-teal-500 to-indigo-500 text-white';
 
   return (
     <div className="relative overflow-hidden pt-8 pb-16 lg:pt-14 lg:pb-24">
       {/* Background Mesh Glows */}
       <div className="pointer-events-none absolute -top-24 left-1/2 -z-10 -translate-x-1/2 transform-gpu blur-3xl opacity-60">
         <div
-          className={`aspect-[1155/678] w-[75rem] ${
-            vibe === 'emerald'
-              ? 'bg-gradient-to-tr from-emerald-600/30 via-teal-500/20 to-cyan-500/30'
-              : 'bg-gradient-to-tr from-purple-600/35 via-indigo-600/25 to-pink-500/30'
-          }`}
+          className={`aspect-[1155/678] w-[75rem] bg-gradient-to-tr ${auraGradient}`}
           style={{
             clipPath:
               'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)'
@@ -51,21 +78,25 @@ export const Hero: React.FC<HeroProps> = ({
         <div className="mb-4 flex items-center justify-center gap-2 text-xs font-bold tracking-wide">
           <span
             className={`flex items-center gap-2 rounded-full border px-4 py-1.5 shadow-sm transition-all ${
-              isDark
-                ? 'bg-white/5 border-white/15 text-purple-300 backdrop-blur-md'
+              vibe === 'eclipse' || vibe === 'abyss'
+                ? 'bg-amber-950/40 border-amber-500/30 text-amber-300'
+                : vibe === 'sunset'
+                ? 'bg-rose-950/40 border-rose-500/30 text-rose-300'
+                : vibe === 'tokyo'
+                ? 'bg-violet-950/40 border-violet-500/30 text-violet-300'
                 : 'bg-indigo-50 border-indigo-200 text-indigo-900'
             }`}
           >
-            <Sparkles className="h-4 w-4 text-purple-400 fill-purple-400 animate-pulse" />
+            <Sparkles className="h-4 w-4 fill-current animate-pulse" />
             <span>CALIPS Archetype Model</span>
             <span className="opacity-40">·</span>
             <span>Gen-Z Career Navigator</span>
             <span className="opacity-40">·</span>
-            <span className="text-emerald-400 font-semibold">Supabase Cloud Ready</span>
+            <span className="text-emerald-400 font-semibold">Supabase PostgreSQL Live</span>
           </span>
         </div>
 
-        {/* Primary Headline with Rich Radiant Gradient */}
+        {/* Primary Headline with Rich Gradient */}
         <div className="text-center">
           <h1
             className={`font-display text-4xl font-extrabold tracking-tight sm:text-6xl lg:text-7xl [text-wrap:balance] ${
@@ -73,7 +104,9 @@ export const Hero: React.FC<HeroProps> = ({
             }`}
           >
             Decode your interest.{' '}
-            <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-500 bg-clip-text text-transparent">
+            <span
+              className={`bg-gradient-to-r ${headlineGradient} bg-clip-text text-transparent`}
+            >
               Discover your direction.
             </span>
           </h1>
@@ -83,7 +116,7 @@ export const Hero: React.FC<HeroProps> = ({
               isDark ? 'text-slate-300' : 'text-slate-600'
             }`}
           >
-            Overwhelmed by infinite career paths and confusing majors? PathCode decodes your natural strengths across 6 core dimensions, pinpointing in-demand jobs, skills to build, and top university programs in your target city or country.
+            Confused by endless career paths, conflicting majors, and university options? PathCode decodes your strengths across 6 core dimensions, pinpointing in-demand jobs, skills to build, and top university programs in your dream city.
           </p>
 
           {/* Exploratory Guidance Disclaimer */}
@@ -94,7 +127,17 @@ export const Hero: React.FC<HeroProps> = ({
                 : 'bg-indigo-50/80 border-indigo-200/80 text-indigo-950'
             }`}
           >
-            <ShieldCheck className="h-4 w-4 shrink-0 text-purple-400" />
+            <ShieldCheck
+              className={`h-4 w-4 shrink-0 ${
+                vibe === 'eclipse' || vibe === 'abyss'
+                  ? 'text-amber-400'
+                  : vibe === 'sunset'
+                  ? 'text-rose-400'
+                  : vibe === 'tokyo'
+                  ? 'text-fuchsia-400'
+                  : 'text-indigo-600'
+              }`}
+            />
             <span>
               <strong>Note for Students:</strong> PathCode is an exploratory career guidance tool to reveal possibilities, not a rigid prediction of your destiny.
             </span>
@@ -106,15 +149,29 @@ export const Hero: React.FC<HeroProps> = ({
           {/* Option 1: Discover My Career (60-Question CALIPS Assessment) */}
           <div
             className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border p-8 shadow-xl transition-all duration-300 hover:scale-[1.01] ${
-              isDark
-                ? 'bg-[#11172A]/90 border-white/10 hover:border-purple-500/50 hover:shadow-purple-500/15'
+              vibe === 'eclipse' || vibe === 'abyss'
+                ? 'bg-[#111018]/90 border-amber-500/25 hover:border-amber-400/50 hover:shadow-amber-500/15'
+                : vibe === 'sunset'
+                ? 'bg-[#131024]/90 border-rose-500/20 hover:border-rose-400/50 hover:shadow-rose-500/15'
+                : vibe === 'tokyo'
+                ? 'bg-[#110D20]/90 border-violet-500/25 hover:border-violet-400/50 hover:shadow-violet-500/15'
                 : 'bg-white border-indigo-200 hover:border-indigo-400 hover:shadow-2xl hover:shadow-indigo-500/15'
             }`}
           >
             <div className="relative z-10">
               <div className="flex items-center justify-between">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/20 border border-purple-500/30 px-3 py-1 text-xs font-bold uppercase tracking-wider text-purple-300">
-                  <Sparkles className="h-3.5 w-3.5 text-purple-400" />
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider border ${
+                    vibe === 'eclipse' || vibe === 'abyss'
+                      ? 'bg-amber-500/20 border-amber-500/30 text-amber-300'
+                      : vibe === 'sunset'
+                      ? 'bg-rose-500/20 border-rose-500/30 text-rose-300'
+                      : vibe === 'tokyo'
+                      ? 'bg-violet-500/20 border-violet-500/30 text-violet-300'
+                      : 'bg-indigo-100 border-indigo-200 text-indigo-800'
+                  }`}
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
                   Option 01 · Full Assessment
                 </span>
                 <span
@@ -144,7 +201,7 @@ export const Hero: React.FC<HeroProps> = ({
                 Answer 10 intuitive questions for each of the 6 CALIPS dimensions. Calculate your top 3-letter PathCode and unlock university programs tailored to your dream city or country!
               </p>
 
-              {/* 6 Dimension Badges in Cheerful Colors */}
+              {/* 6 Dimension Badges */}
               <div className="mt-6 grid grid-cols-3 gap-2.5 text-xs font-semibold">
                 <div
                   className={`flex items-center gap-2 rounded-xl p-2.5 border transition-all ${
@@ -224,7 +281,7 @@ export const Hero: React.FC<HeroProps> = ({
             <div className="relative z-10 mt-8 pt-5 border-t border-white/10">
               <button
                 onClick={onStartQuiz}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 px-5 py-4 text-sm font-bold text-white shadow-lg shadow-purple-500/30 hover:opacity-95 active:scale-98 transition-all"
+                className={`flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r ${button1Gradient} px-5 py-4 text-sm font-bold shadow-lg hover:opacity-95 active:scale-98 transition-all`}
               >
                 <span>Start 60-Question CALIPS Assessment</span>
                 <ArrowRight className="h-4 w-4" />
@@ -235,15 +292,29 @@ export const Hero: React.FC<HeroProps> = ({
           {/* Option 2: I Know My Interest (Fast-Track) */}
           <div
             className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border p-8 shadow-xl transition-all duration-300 hover:scale-[1.01] ${
-              isDark
-                ? 'bg-[#11172A]/90 border-white/10 hover:border-cyan-500/50 hover:shadow-cyan-500/15'
+              vibe === 'eclipse' || vibe === 'abyss'
+                ? 'bg-[#111018]/90 border-yellow-500/25 hover:border-yellow-400/50 hover:shadow-yellow-500/15'
+                : vibe === 'sunset'
+                ? 'bg-[#131024]/90 border-amber-500/20 hover:border-amber-400/50 hover:shadow-amber-500/15'
+                : vibe === 'tokyo'
+                ? 'bg-[#110D20]/90 border-fuchsia-500/25 hover:border-fuchsia-400/50 hover:shadow-fuchsia-500/15'
                 : 'bg-white border-sky-200 hover:border-sky-400 hover:shadow-2xl hover:shadow-sky-500/15'
             }`}
           >
             <div className="relative z-10">
               <div className="flex items-center justify-between">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-cyan-500/20 border border-cyan-500/30 px-3 py-1 text-xs font-bold uppercase tracking-wider text-cyan-300">
-                  <Search className="h-3.5 w-3.5 text-cyan-400" />
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider border ${
+                    vibe === 'eclipse' || vibe === 'abyss'
+                      ? 'bg-yellow-500/20 border-yellow-500/30 text-yellow-300'
+                      : vibe === 'sunset'
+                      ? 'bg-amber-500/20 border-amber-500/30 text-amber-300'
+                      : vibe === 'tokyo'
+                      ? 'bg-fuchsia-500/20 border-fuchsia-500/30 text-fuchsia-300'
+                      : 'bg-sky-100 border-sky-200 text-sky-800'
+                  }`}
+                >
+                  <Search className="h-3.5 w-3.5" />
                   Option 02 · Fast-Track Match
                 </span>
                 <span
@@ -300,7 +371,7 @@ export const Hero: React.FC<HeroProps> = ({
             <div className="relative z-10 mt-8 pt-5 border-t border-white/10">
               <button
                 onClick={onStartDirect}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 via-teal-500 to-indigo-500 px-5 py-4 text-sm font-bold text-white shadow-lg shadow-cyan-500/25 hover:opacity-95 active:scale-98 transition-all"
+                className={`flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r ${button2Gradient} px-5 py-4 text-sm font-bold shadow-lg hover:opacity-95 active:scale-98 transition-all`}
               >
                 <span>Direct Interest Match & City Finder</span>
                 <ArrowRight className="h-4 w-4" />
@@ -318,14 +389,24 @@ export const Hero: React.FC<HeroProps> = ({
                 : 'bg-white border-slate-200 shadow-sm'
             }`}
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/20 text-purple-400 mb-3">
+            <div
+              className={`flex h-10 w-10 items-center justify-center rounded-xl mb-3 ${
+                vibe === 'eclipse' || vibe === 'abyss'
+                  ? 'bg-amber-500/20 text-amber-400'
+                  : vibe === 'sunset'
+                  ? 'bg-rose-500/20 text-rose-400'
+                  : vibe === 'tokyo'
+                  ? 'bg-violet-500/20 text-violet-400'
+                  : 'bg-indigo-100 text-indigo-700'
+              }`}
+            >
               <MapPin className="h-5 w-5" />
             </div>
             <h3 className={`font-bold text-base mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-              City & Country Filter
+              Target Study Location
             </h3>
             <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-              Target top universities in Karachi, Lahore, Islamabad, London, Toronto, Boston, and more based on your CALIPS archetype.
+              Filter top universities in Karachi, Lahore, Islamabad, London, Toronto, Boston, and more based on your CALIPS archetype.
             </p>
           </div>
 
@@ -340,10 +421,10 @@ export const Hero: React.FC<HeroProps> = ({
               <Database className="h-5 w-5" />
             </div>
             <h3 className={`font-bold text-base mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-              Supabase Persistence & RLS
+              Supabase PostgreSQL Live
             </h3>
             <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-              All student assessments, profiles, and saved majors are securely synced to your Supabase PostgreSQL database with Row Level Security.
+              Your assessments, profiles, and saved careers are backed directly by your Supabase database instance.
             </p>
           </div>
 
@@ -354,7 +435,17 @@ export const Hero: React.FC<HeroProps> = ({
                 : 'bg-white border-slate-200 shadow-sm'
             }`}
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-pink-500/20 text-pink-400 mb-3">
+            <div
+              className={`flex h-10 w-10 items-center justify-center rounded-xl mb-3 ${
+                vibe === 'eclipse' || vibe === 'abyss'
+                  ? 'bg-yellow-500/20 text-yellow-400'
+                  : vibe === 'sunset'
+                  ? 'bg-amber-500/20 text-amber-400'
+                  : vibe === 'tokyo'
+                  ? 'bg-fuchsia-500/20 text-fuchsia-400'
+                  : 'bg-pink-100 text-pink-700'
+              }`}
+            >
               <GraduationCap className="h-5 w-5" />
             </div>
             <h3 className={`font-bold text-base mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
