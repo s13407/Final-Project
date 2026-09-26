@@ -48,6 +48,7 @@ export interface StudentProfile {
   id: string;
   email: string;
   name: string;
+  password?: string;
   age: number | string;
   school: string;
   department: string;

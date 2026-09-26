@@ -118,17 +118,143 @@ export const testSupabaseConnection = async (): Promise<{
 };
 
 // -------------------------------------------------------------
-// Local Storage mirror for offline / guest resilience
+// Local Storage & Session Storage Auth Management
 // -------------------------------------------------------------
 const LOCAL_STORAGE_KEY_USER = 'pathcode_current_user';
 const LOCAL_STORAGE_KEY_PROFILES = 'pathcode_mock_profiles';
 const LOCAL_STORAGE_KEY_ASSESSMENTS = 'pathcode_mock_assessments';
+const LOCAL_STORAGE_KEY_REGISTERED = 'pathcode_registered_accounts';
+const LOCAL_STORAGE_KEY_LAST_ACCOUNT = 'pathcode_last_student_account';
+const LOCAL_STORAGE_KEY_VISITED = 'pathcode_has_visited_before';
+const SESSION_STORAGE_KEY_SESSION = 'pathcode_active_session_user_id';
 
-export function getMockUser(): StudentProfile | null {
-  const data = localStorage.getItem(LOCAL_STORAGE_KEY_USER);
+export interface RegisteredAccount {
+  id: string;
+  email: string;
+  name: string;
+  password: string;
+  school?: string;
+  department?: string;
+  profile: StudentProfile;
+  registeredAt: string;
+}
+
+// Generate an authentic, memorable unique password
+export function generateUniquePassword(): string {
+  const prefixes = ['PATH', 'CODE', 'CALIPS', 'STAR', 'ORION', 'LUMEN', 'NEXUS', 'PRISM'];
+  const suffixes = ['EXP', 'PRO', 'KEY', 'STAR', 'SKY', 'NOVA', 'CORE', 'ACE'];
+  const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+  const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
+  const num = Math.floor(1000 + Math.random() * 9000);
+  return `${prefix}-${num}-${suffix}`;
+}
+
+export function isFirstTimeVisitor(): boolean {
+  const visited = localStorage.getItem(LOCAL_STORAGE_KEY_VISITED);
+  if (!visited) return true;
+  const accounts = getRegisteredAccounts();
+  return Object.keys(accounts).length === 0;
+}
+
+export function markAsVisited(): void {
+  localStorage.setItem(LOCAL_STORAGE_KEY_VISITED, 'true');
+}
+
+export function hasActiveSession(): boolean {
+  return Boolean(sessionStorage.getItem(SESSION_STORAGE_KEY_SESSION));
+}
+
+export function getActiveSessionUserId(): string | null {
+  return sessionStorage.getItem(SESSION_STORAGE_KEY_SESSION);
+}
+
+export function setActiveSession(userId: string): void {
+  sessionStorage.setItem(SESSION_STORAGE_KEY_SESSION, userId);
+  markAsVisited();
+}
+
+export function clearActiveSession(): void {
+  sessionStorage.removeItem(SESSION_STORAGE_KEY_SESSION);
+  localStorage.removeItem(LOCAL_STORAGE_KEY_USER);
+}
+
+export function getLastRegisteredAccount(): RegisteredAccount | null {
+  const data = localStorage.getItem(LOCAL_STORAGE_KEY_LAST_ACCOUNT);
   if (!data) return null;
   try {
     return JSON.parse(data);
+  } catch {
+    return null;
+  }
+}
+
+export function getRegisteredAccounts(): Record<string, RegisteredAccount> {
+  const data = localStorage.getItem(LOCAL_STORAGE_KEY_REGISTERED);
+  let accounts: Record<string, RegisteredAccount> = {};
+  if (data) {
+    try {
+      accounts = JSON.parse(data);
+    } catch {
+      accounts = {};
+    }
+  }
+
+  // Pre-seed demo student for testing if none exists
+  if (!accounts['usr-demo-1']) {
+    const demoProfile: StudentProfile = {
+      id: 'usr-demo-1',
+      name: 'Ayesha Khan',
+      email: 's13407@commecscollege.edu.pk',
+      password: 'COMMECS-2026-STAR',
+      age: 18,
+      school: 'Commecs College',
+      department: 'Computer Science & IT',
+      preferredCountry: 'Pakistan',
+      preferredCity: 'Karachi',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      savedCareers: ['Software or AI/ML Engineer', 'Data Scientist / Data Analyst'],
+      savedUniversities: ['prog-pk-1', 'prog-pk-2', 'prog-pk-6']
+    };
+    accounts['usr-demo-1'] = {
+      id: demoProfile.id,
+      email: demoProfile.email,
+      name: demoProfile.name,
+      password: 'COMMECS-2026-STAR',
+      school: demoProfile.school,
+      department: demoProfile.department,
+      profile: demoProfile,
+      registeredAt: demoProfile.createdAt
+    };
+  }
+
+  return accounts;
+}
+
+export function saveRegisteredAccount(account: RegisteredAccount): void {
+  const accounts = getRegisteredAccounts();
+  accounts[account.id] = account;
+  localStorage.setItem(LOCAL_STORAGE_KEY_REGISTERED, JSON.stringify(accounts));
+  localStorage.setItem(LOCAL_STORAGE_KEY_LAST_ACCOUNT, JSON.stringify(account));
+  saveMockUser(account.profile);
+  markAsVisited();
+}
+
+export function getMockUser(): StudentProfile | null {
+  // If active session exists, get the corresponding profile
+  const activeId = getActiveSessionUserId();
+  if (!activeId) return null;
+
+  const accounts = getRegisteredAccounts();
+  if (accounts[activeId]) {
+    return accounts[activeId].profile;
+  }
+
+  const data = localStorage.getItem(LOCAL_STORAGE_KEY_USER);
+  if (!data) return null;
+  try {
+    const user: StudentProfile = JSON.parse(data);
+    if (user.id === activeId) return user;
+    return null;
   } catch {
     return null;
   }
@@ -142,7 +268,7 @@ export function saveMockUser(profile: StudentProfile): void {
 }
 
 export function clearMockUser(): void {
-  localStorage.removeItem(LOCAL_STORAGE_KEY_USER);
+  clearActiveSession();
 }
 
 function getAllMockProfiles(): Record<string, StudentProfile> {
@@ -194,16 +320,18 @@ export async function signUpStudent(params: {
   department: string;
   preferredCountry: string;
   preferredCity: string;
-}): Promise<{ profile: StudentProfile; error?: string }> {
+}): Promise<{ profile: StudentProfile; uniquePassword: string; error?: string }> {
   const userId = 'usr-' + Date.now();
+  const uniquePassword = params.password.trim();
 
   const profile: StudentProfile = {
     id: userId,
-    email: params.email,
-    name: params.name,
+    email: params.email.trim(),
+    name: params.name.trim(),
+    password: uniquePassword,
     age: params.age,
-    school: params.school,
-    department: params.department,
+    school: params.school.trim(),
+    department: params.department.trim(),
     preferredCountry: params.preferredCountry,
     preferredCity: params.preferredCity,
     createdAt: new Date().toISOString(),
@@ -211,59 +339,124 @@ export async function signUpStudent(params: {
     savedUniversities: []
   };
 
-  saveMockUser(profile);
+  const account: RegisteredAccount = {
+    id: userId,
+    email: profile.email,
+    name: profile.name,
+    password: uniquePassword,
+    school: profile.school,
+    department: profile.department,
+    profile,
+    registeredAt: profile.createdAt
+  };
 
-  // Sync to Supabase PostgreSQL database
+  saveRegisteredAccount(account);
+  setActiveSession(userId);
+
+  // Sync to Supabase PostgreSQL database via backend
   try {
-    await fetch('/api/profiles/sync', {
+    const res = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(profile)
+      body: JSON.stringify({
+        ...profile,
+        password: uniquePassword
+      })
     });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.profile) {
+        account.profile = { ...profile, ...data.profile };
+        saveRegisteredAccount(account);
+      }
+    }
   } catch (err) {
     console.warn('Profile synced to local storage; backend sync skipped:', err);
   }
 
-  return { profile };
+  return { profile: account.profile, uniquePassword };
 }
 
 export async function signInStudent(
-  email: string,
-  _password: string
+  password: string,
+  email?: string
 ): Promise<{ profile: StudentProfile; error?: string }> {
-  // Check local profile first
-  const mockUser = getMockUser();
-  if (mockUser && mockUser.email.toLowerCase() === email.toLowerCase()) {
-    return { profile: mockUser };
+  const cleanPassword = password.trim();
+  const cleanEmail = email?.trim().toLowerCase();
+
+  if (!cleanPassword) {
+    return { profile: null as any, error: 'Please enter your unique password.' };
   }
 
-  const generatedProfile: StudentProfile = {
-    id: 'usr-' + Date.now(),
-    email,
-    name: email.split('@')[0],
-    age: 18,
-    school: 'Commecs College',
-    department: 'Computer Science & IT',
-    preferredCountry: 'Pakistan',
-    preferredCity: 'Karachi',
-    createdAt: new Date().toISOString(),
-    savedCareers: [],
-    savedUniversities: []
-  };
-
-  saveMockUser(generatedProfile);
-
+  // 1. First attempt backend login with live Supabase database
   try {
-    await fetch('/api/profiles/sync', {
+    const res = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(generatedProfile)
+      body: JSON.stringify({
+        email: cleanEmail || undefined,
+        password: cleanPassword
+      })
     });
-  } catch {
-    // ignore
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.profile) {
+        const student: StudentProfile = data.profile;
+        const account: RegisteredAccount = {
+          id: student.id,
+          email: student.email,
+          name: student.name,
+          password: student.password || cleanPassword,
+          school: student.school,
+          department: student.department,
+          profile: student,
+          registeredAt: student.createdAt
+        };
+        saveRegisteredAccount(account);
+        setActiveSession(student.id);
+        return { profile: student };
+      }
+    }
+  } catch (err) {
+    console.warn('Notice querying auth endpoint, falling back to local credentials store:', err);
   }
 
-  return { profile: generatedProfile };
+  // 2. Check local registered accounts
+  const accounts = getRegisteredAccounts();
+  const accountList = Object.values(accounts);
+
+  let matchedAccount: RegisteredAccount | undefined;
+
+  if (cleanEmail) {
+    matchedAccount = accountList.find(
+      (acc) =>
+        acc.email.toLowerCase() === cleanEmail &&
+        (acc.password.toUpperCase() === cleanPassword.toUpperCase() ||
+          acc.password === cleanPassword)
+    );
+  }
+
+  // If no email provided or not found by email, match by unique password directly
+  if (!matchedAccount) {
+    matchedAccount = accountList.find(
+      (acc) =>
+        acc.password.toUpperCase() === cleanPassword.toUpperCase() ||
+        acc.password === cleanPassword
+    );
+  }
+
+  if (matchedAccount) {
+    saveRegisteredAccount(matchedAccount);
+    setActiveSession(matchedAccount.id);
+    return { profile: matchedAccount.profile };
+  }
+
+  return {
+    profile: null as any,
+    error:
+      'Invalid password. If you are visiting for the first time, please click "First-Time Sign In" to generate your unique password.'
+  };
 }
 
 export async function syncAssessmentToSupabase(result: AssessmentResult): Promise<boolean> {

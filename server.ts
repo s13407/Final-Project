@@ -42,6 +42,8 @@ async function ensureTables() {
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
       );
 
+      ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS password TEXT;
+
       CREATE TABLE IF NOT EXISTS public.assessments (
         id TEXT PRIMARY KEY,
         user_id TEXT,
@@ -56,7 +58,15 @@ async function ensureTables() {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
       );
     `);
-    console.log('✓ Supabase PostgreSQL tables verified (profiles, assessments)');
+
+    // Ensure demo account exists with known unique password
+    await client.query(`
+      INSERT INTO public.profiles (id, name, email, password, age, school, department, preferred_country, preferred_city)
+      VALUES ('usr-demo-1', 'Ayesha Khan', 's13407@commecscollege.edu.pk', 'COMMECS-2026-STAR', 18, 'Commecs College', 'Computer Science & IT', 'Pakistan', 'Karachi')
+      ON CONFLICT (id) DO UPDATE SET password = COALESCE(public.profiles.password, 'COMMECS-2026-STAR');
+    `);
+
+    console.log('✓ Supabase PostgreSQL tables verified (profiles, assessments) with password auth');
     client.release();
   } catch (err: any) {
     console.warn('Could not verify Supabase tables on boot:', err.message);
@@ -189,6 +199,7 @@ app.post('/api/profiles/sync', async (req: Request, res: Response) => {
     id,
     name,
     email,
+    password,
     age,
     school,
     department,
@@ -203,12 +214,13 @@ app.post('/api/profiles/sync', async (req: Request, res: Response) => {
     await client.query(
       `
       INSERT INTO public.profiles 
-        (id, name, email, age, school, department, preferred_country, preferred_city, saved_careers, saved_universities, updated_at)
+        (id, name, email, password, age, school, department, preferred_country, preferred_city, saved_careers, saved_universities, updated_at)
       VALUES 
-        ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, now())
+        ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, now())
       ON CONFLICT (id) DO UPDATE SET
         name = EXCLUDED.name,
         email = EXCLUDED.email,
+        password = COALESCE(EXCLUDED.password, public.profiles.password),
         age = EXCLUDED.age,
         school = EXCLUDED.school,
         department = EXCLUDED.department,
@@ -222,6 +234,7 @@ app.post('/api/profiles/sync', async (req: Request, res: Response) => {
         id,
         name,
         email,
+        password || null,
         Number(age) || 18,
         school || '',
         department || '',
@@ -239,7 +252,151 @@ app.post('/api/profiles/sync', async (req: Request, res: Response) => {
   }
 });
 
-// 5. Get Profile
+// 5. Register Student (First-time visitor with generated unique password)
+app.post('/api/auth/register', async (req: Request, res: Response) => {
+  const {
+    id,
+    name,
+    email,
+    password,
+    age,
+    school,
+    department,
+    preferredCountry,
+    preferredCity
+  } = req.body;
+
+  const studentEmail = (email || '').trim().toLowerCase();
+  const studentPassword = (password || '').trim();
+  const studentId = id || 'usr-' + Date.now();
+
+  if (!studentPassword) {
+    return res.status(400).json({ error: 'Unique password is required' });
+  }
+
+  try {
+    const client = await pool.connect();
+    // Check if email already registered
+    const existing = await client.query('SELECT * FROM public.profiles WHERE lower(email) = $1', [studentEmail]);
+    const targetId = existing.rows.length > 0 ? existing.rows[0].id : studentId;
+
+    await client.query(
+      `
+      INSERT INTO public.profiles 
+        (id, name, email, password, age, school, department, preferred_country, preferred_city, saved_careers, saved_universities, updated_at)
+      VALUES 
+        ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, now())
+      ON CONFLICT (id) DO UPDATE SET
+        name = EXCLUDED.name,
+        email = EXCLUDED.email,
+        password = EXCLUDED.password,
+        age = EXCLUDED.age,
+        school = EXCLUDED.school,
+        department = EXCLUDED.department,
+        preferred_country = EXCLUDED.preferred_country,
+        preferred_city = EXCLUDED.preferred_city,
+        updated_at = now();
+    `,
+      [
+        targetId,
+        name || studentEmail.split('@')[0],
+        studentEmail,
+        studentPassword,
+        Number(age) || 18,
+        school || 'College / University',
+        department || 'Computer Science & IT',
+        preferredCountry || 'Pakistan',
+        preferredCity || 'Karachi',
+        existing.rows[0]?.saved_careers || [],
+        existing.rows[0]?.saved_universities || []
+      ]
+    );
+
+    const updated = await client.query('SELECT * FROM public.profiles WHERE id = $1', [targetId]);
+    client.release();
+
+    const row = updated.rows[0];
+    res.json({
+      success: true,
+      profile: {
+        id: row.id,
+        name: row.name,
+        email: row.email,
+        password: row.password,
+        age: row.age,
+        school: row.school,
+        department: row.department,
+        preferredCountry: row.preferred_country,
+        preferredCity: row.preferred_city,
+        savedCareers: row.saved_careers || [],
+        savedUniversities: row.saved_universities || [],
+        createdAt: row.created_at
+      },
+      uniquePassword: studentPassword
+    });
+  } catch (err: any) {
+    console.error('Error during registration:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 6. Log In Student (Returning visitor entering unique password)
+app.post('/api/auth/login', async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+  const cleanPassword = (password || '').trim();
+  const cleanEmail = (email || '').trim().toLowerCase();
+
+  if (!cleanPassword) {
+    return res.status(400).json({ error: 'Please enter your unique password.' });
+  }
+
+  try {
+    const client = await pool.connect();
+    let result;
+    if (cleanEmail) {
+      result = await client.query(
+        'SELECT * FROM public.profiles WHERE (lower(email) = $1 AND (password = $2 OR password IS NULL)) OR password = $2 LIMIT 1',
+        [cleanEmail, cleanPassword]
+      );
+    } else {
+      result = await client.query(
+        'SELECT * FROM public.profiles WHERE password = $1 LIMIT 1',
+        [cleanPassword]
+      );
+    }
+    client.release();
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({
+        error: 'Invalid password. If this is your first time visiting, please sign in to generate your unique password.'
+      });
+    }
+
+    const row = result.rows[0];
+    res.json({
+      success: true,
+      profile: {
+        id: row.id,
+        name: row.name,
+        email: row.email,
+        password: row.password,
+        age: row.age,
+        school: row.school,
+        department: row.department,
+        preferredCountry: row.preferred_country,
+        preferredCity: row.preferred_city,
+        savedCareers: row.saved_careers || [],
+        savedUniversities: row.saved_universities || [],
+        createdAt: row.created_at
+      }
+    });
+  } catch (err: any) {
+    console.error('Error during login:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 7. Get Profile
 app.get('/api/profiles/:id', async (req: Request, res: Response) => {
   try {
     const client = await pool.connect();
@@ -257,6 +414,7 @@ app.get('/api/profiles/:id', async (req: Request, res: Response) => {
       id: row.id,
       name: row.name,
       email: row.email,
+      password: row.password,
       age: row.age,
       school: row.school,
       department: row.department,

@@ -5,7 +5,8 @@ import {
   Sparkles,
   Database,
   LogOut,
-  MapPin
+  MapPin,
+  Key
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -354,8 +355,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={onOpenAuth}
               className={`flex items-center gap-1.5 rounded-full bg-gradient-to-r ${brandIconBg} px-4 py-1.5 text-xs font-bold shadow-md hover:opacity-95 active:scale-95 transition-all`}
             >
-              <Sparkles className="h-3.5 w-3.5" />
-              <span>Student Sign In</span>
+              <Key className="h-3.5 w-3.5" />
+              <span>Student Log In</span>
             </button>
           )}
         </div>

@@ -21,9 +21,11 @@ import {
   syncAssessmentToSupabase,
   syncProfileUpdate,
   fetchUserAssessments,
-  getStoredSupabaseConfig
+  getStoredSupabaseConfig,
+  hasActiveSession,
+  clearActiveSession
 } from './lib/supabase';
-import { Sparkles, Database, Check } from 'lucide-react';
+import { Sparkles, Database, Check, Key, Lock, ShieldCheck } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<
@@ -55,38 +57,27 @@ export default function App() {
     localStorage.setItem('pathcode_theme_vibe', newVibe);
   };
 
-  // Initialize student profile & fetch assessments (with Supabase sync)
+  // Initialize student profile & fetch assessments
+  // Requirement: Each time you open our website, you are supposed to log in!
   useEffect(() => {
     const initData = async () => {
-      let user = getMockUser();
-      if (!user) {
-        // Default verified student profile for instant evaluation
-        const demoStudent: StudentProfile = {
-          id: 'usr-demo-1',
-          name: 'Ayesha Khan',
-          email: 's13407@commecscollege.edu.pk',
-          age: 18,
-          school: 'Commecs College',
-          department: 'Computer Science & IT',
-          preferredCountry: 'Pakistan',
-          preferredCity: 'Karachi',
-          createdAt: new Date().toISOString(),
-          savedCareers: ['Software or AI/ML Engineer', 'Data Scientist / Data Analyst'],
-          savedUniversities: ['prog-pk-1', 'prog-pk-2', 'prog-pk-6']
-        };
-        saveMockUser(demoStudent);
-        user = demoStudent;
+      if (hasActiveSession()) {
+        const user = getMockUser();
+        if (user) {
+          setCurrentUser(user);
+          try {
+            const list = await fetchUserAssessments(user.id);
+            setAssessmentsList(list);
+          } catch {
+            setAssessmentsList(getMockAssessments(user.id));
+          }
+          return;
+        }
       }
 
-      setCurrentUser(user);
-
-      // Fetch assessments (from Supabase if configured, or local mirror)
-      try {
-        const list = await fetchUserAssessments(user.id);
-        setAssessmentsList(list);
-      } catch {
-        setAssessmentsList(getMockAssessments(user.id));
-      }
+      // No active session in this tab/window: prompt student to log in each time website opens
+      setCurrentUser(null);
+      setIsAuthOpen(true);
     };
 
     initData();
@@ -153,15 +144,21 @@ export default function App() {
 
   const handleLoginSuccess = async (profile: StudentProfile) => {
     setCurrentUser(profile);
-    const list = await fetchUserAssessments(profile.id);
-    setAssessmentsList(list);
+    setIsAuthOpen(false);
+    try {
+      const list = await fetchUserAssessments(profile.id);
+      setAssessmentsList(list);
+    } catch {
+      setAssessmentsList(getMockAssessments(profile.id));
+    }
   };
 
   const handleLogout = () => {
-    clearMockUser();
+    clearActiveSession();
     setCurrentUser(null);
     setAssessmentsList([]);
     setActiveTab('home');
+    setIsAuthOpen(true);
   };
 
   const handleConfigUpdated = () => {
@@ -185,6 +182,10 @@ export default function App() {
       <Navbar
         activeTab={activeTab}
         setActiveTab={(tab) => {
+          if (tab === 'dashboard' && !currentUser) {
+            setIsAuthOpen(true);
+            return;
+          }
           setActiveTab(tab);
         }}
         currentUser={currentUser}
@@ -195,6 +196,37 @@ export default function App() {
         vibe={vibe}
         onSelectVibe={handleSelectVibe}
       />
+
+      {/* Session Login Notice if not logged in */}
+      {!currentUser && (
+        <div
+          className={`border-b transition-all py-2.5 px-4 text-xs font-semibold ${
+            vibe === 'eclipse' || vibe === 'abyss'
+              ? 'bg-amber-500/10 border-amber-500/25 text-amber-200'
+              : vibe === 'sunset'
+              ? 'bg-rose-500/10 border-rose-500/25 text-rose-200'
+              : vibe === 'tokyo'
+              ? 'bg-violet-500/10 border-violet-500/25 text-violet-200'
+              : 'bg-indigo-50 border-indigo-200 text-indigo-900'
+          }`}
+        >
+          <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-2.5">
+            <div className="flex items-center gap-2">
+              <Lock className="h-4 w-4 shrink-0 text-amber-400" />
+              <span>
+                <strong>Student Login Required:</strong> Each time you open our website, you are supposed to log in with your unique password. (First time visiting? Sign up once to generate your password).
+              </span>
+            </div>
+            <button
+              onClick={() => setIsAuthOpen(true)}
+              className="shrink-0 inline-flex items-center gap-1.5 rounded-full px-4 py-1 text-xs font-bold bg-amber-500 text-slate-950 hover:bg-amber-400 transition-colors shadow-sm"
+            >
+              <Key className="h-3.5 w-3.5" />
+              <span>Log In with Password</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Main Content Area */}
       <main className="flex-1">
