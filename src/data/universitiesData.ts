@@ -35,6 +35,38 @@ export const POPULAR_CITIES = [
   'Singapore'
 ] as const;
 
+export const CITIES_BY_COUNTRY: Record<string, string[]> = {
+  Pakistan: ['Karachi', 'Lahore', 'Islamabad', 'Peshawar', 'Rawalpindi', 'Faisalabad'],
+  'United States': ['Boston', 'New York', 'San Francisco / Bay Area', 'Pittsburgh', 'Austin', 'Chicago', 'Los Angeles'],
+  'United Kingdom': ['London', 'Oxford', 'Cambridge', 'Manchester', 'Edinburgh'],
+  Canada: ['Toronto', 'Vancouver', 'Montreal', 'Waterloo'],
+  Australia: ['Melbourne', 'Sydney', 'Brisbane'],
+  Germany: ['Munich', 'Berlin', 'Aachen', 'Heidelberg'],
+  'United Arab Emirates': ['Dubai', 'Abu Dhabi', 'Sharjah'],
+  Singapore: ['Singapore'],
+  Netherlands: ['Amsterdam', 'Delft', 'Eindhoven'],
+  'Anywhere / Global': [
+    'Any City / Flexible',
+    'Karachi',
+    'Lahore',
+    'Islamabad',
+    'London',
+    'Toronto',
+    'Boston',
+    'Melbourne',
+    'Munich',
+    'Dubai',
+    'Singapore'
+  ]
+};
+
+export const getCitiesForCountry = (country?: string): string[] => {
+  if (!country || !CITIES_BY_COUNTRY[country]) {
+    return CITIES_BY_COUNTRY['Anywhere / Global'];
+  }
+  return CITIES_BY_COUNTRY[country];
+};
+
 export const UNIVERSITY_PROGRAMS: UniversityProgram[] = [
   // --- PAKISTAN ---
   {

@@ -3,14 +3,13 @@
 @layer base {
   body {
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color: #0f172a;
-    background-color: #fcfdfe;
   }
   h1, h2, h3, .font-display {
     font-family: 'Syne', 'Plus Jakarta Sans', system-ui, sans-serif;
   }
 }
 
+/* Animations */
 @keyframes floatSlow {
   0%, 100% {
     transform: translateY(0px) rotate(0deg);
@@ -22,12 +21,12 @@
 
 @keyframes pulseGlow {
   0%, 100% {
-    opacity: 0.5;
+    opacity: 0.4;
     transform: scale(1);
   }
   50% {
-    opacity: 0.8;
-    transform: scale(1.05);
+    opacity: 0.75;
+    transform: scale(1.08);
   }
 }
 
@@ -54,39 +53,40 @@
   animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Glass & Luminous Effects */
-.glass-panel {
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(226, 232, 240, 0.85);
-  box-shadow: 0 4px 20px -2px rgba(99, 102, 241, 0.06), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
+/* Aesthetic Glows & Glass Cards */
+.cosmic-mesh {
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.18) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(236, 72, 153, 0.16) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(6, 182, 212, 0.15) 0px, transparent 50%);
 }
 
-.glass-panel-elevated {
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(226, 232, 240, 0.95);
-  box-shadow: 0 12px 36px -4px rgba(99, 102, 241, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
+.electric-mesh {
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(244, 63, 94, 0.08) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(14, 165, 233, 0.08) 0px, transparent 50%);
 }
 
-.glass-panel-glow {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%);
-  border: 1px solid rgba(199, 210, 254, 0.6);
-  box-shadow: 0 10px 30px -5px rgba(99, 102, 241, 0.15), 0 0 0 1px rgba(165, 180, 252, 0.2);
+.emerald-mesh {
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.18) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.15) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(132, 204, 22, 0.14) 0px, transparent 50%);
 }
 
-/* Custom scrollbars with gentle violet touch */
+/* Custom scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: rgba(148, 163, 184, 0.35);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: rgba(148, 163, 184, 0.6);
 }

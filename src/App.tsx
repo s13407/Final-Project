@@ -11,20 +11,30 @@ import { AuthModal } from './components/AuthModal';
 import { SupabaseModal } from './components/SupabaseModal';
 import { Footer } from './components/Footer';
 
-import { StudentProfile, AssessmentResult } from './types';
+import { StudentProfile, AssessmentResult, ThemeVibe } from './types';
 import {
   getMockUser,
   saveMockUser,
   clearMockUser,
   getMockAssessments,
   saveMockAssessment,
-  isConfigured as isSupabaseConfiguredInitial
+  syncAssessmentToSupabase,
+  syncProfileUpdate,
+  fetchUserAssessments,
+  getStoredSupabaseConfig
 } from './lib/supabase';
+import { Sparkles, Database, Check } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<
     'home' | 'quiz' | 'direct' | 'universities' | 'careers' | 'dashboard'
   >('home');
+
+  // Aesthetic Theme Vibe: default to 'cosmic' (electric obsidian neon) or student preference
+  const [vibe, setVibe] = useState<ThemeVibe>(() => {
+    const saved = localStorage.getItem('pathcode_theme_vibe') as ThemeVibe;
+    return saved === 'electric' || saved === 'emerald' ? saved : 'cosmic';
+  });
 
   const [currentUser, setCurrentUser] = useState<StudentProfile | null>(null);
   const [currentResult, setCurrentResult] = useState<AssessmentResult | null>(null);
@@ -32,56 +42,74 @@ export default function App() {
 
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isSupabaseOpen, setIsSupabaseOpen] = useState(false);
-  const [isSupabaseConnected, setIsSupabaseConnected] = useState(isSupabaseConfiguredInitial);
+  const [isSupabaseConnected, setIsSupabaseConnected] = useState(() => {
+    return getStoredSupabaseConfig().isConfigured;
+  });
 
-  // Initialize user and assessment history from local storage / Supabase mirror
+  const handleSelectVibe = (newVibe: ThemeVibe) => {
+    setVibe(newVibe);
+    localStorage.setItem('pathcode_theme_vibe', newVibe);
+  };
+
+  // Initialize student profile & fetch assessments (with Supabase sync)
   useEffect(() => {
-    const user = getMockUser();
-    if (user) {
+    const initData = async () => {
+      let user = getMockUser();
+      if (!user) {
+        // Default verified student profile for instant evaluation
+        const demoStudent: StudentProfile = {
+          id: 'usr-demo-1',
+          name: 'Ayesha Khan',
+          email: 's13407@commecscollege.edu.pk',
+          age: 18,
+          school: 'Commecs College',
+          department: 'Computer Science & IT',
+          preferredCountry: 'Pakistan',
+          preferredCity: 'Karachi',
+          createdAt: new Date().toISOString(),
+          savedCareers: ['Software or AI/ML Engineer', 'Data Scientist / Data Analyst'],
+          savedUniversities: ['prog-pk-1', 'prog-pk-2', 'prog-pk-6']
+        };
+        saveMockUser(demoStudent);
+        user = demoStudent;
+      }
+
       setCurrentUser(user);
-      const pastAssessments = getMockAssessments(user.id);
-      setAssessmentsList(pastAssessments);
-    } else {
-      // Default demo student profile for immediate seamless exploration
-      const guestStudent: StudentProfile = {
-        id: 'usr-demo-1',
-        name: 'Ayesha Khan',
-        email: 's13407@commecscollege.edu.pk',
-        age: 18,
-        school: 'Commecs College',
-        department: 'Computer Science & IT',
-        preferredCountry: 'Pakistan',
-        preferredCity: 'Karachi',
-        createdAt: new Date().toISOString(),
-        savedCareers: ['Software or AI/ML Engineer', 'Data Scientist / Data Analyst'],
-        savedUniversities: ['prog-pk-1', 'prog-pk-2', 'prog-pk-6']
-      };
-      saveMockUser(guestStudent);
-      setCurrentUser(guestStudent);
-      const pastAssessments = getMockAssessments(guestStudent.id);
-      setAssessmentsList(pastAssessments);
-    }
+
+      // Fetch assessments (from Supabase if configured, or local mirror)
+      try {
+        const list = await fetchUserAssessments(user.id);
+        setAssessmentsList(list);
+      } catch {
+        setAssessmentsList(getMockAssessments(user.id));
+      }
+    };
+
+    initData();
   }, []);
 
-  const handleAssessmentComplete = (result: AssessmentResult) => {
+  const handleAssessmentComplete = async (result: AssessmentResult) => {
     if (currentUser) {
       result.userId = currentUser.id;
       result.userName = currentUser.name;
-      // If user had no location or wants to sync
+
       if (result.preferredCountry && !currentUser.preferredCountry) {
         currentUser.preferredCountry = result.preferredCountry;
         currentUser.preferredCity = result.preferredCity;
-        saveMockUser(currentUser);
+        await syncProfileUpdate(currentUser);
       }
     }
-    saveMockAssessment(result);
+
+    // Save locally and sync to Supabase database
+    await syncAssessmentToSupabase(result);
+
     setCurrentResult(result);
     setAssessmentsList((prev) => [result, ...prev]);
     setActiveTab('home');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleSaveCareer = (career: string) => {
+  const handleSaveCareer = async (career: string) => {
     if (!currentUser) {
       setIsAuthOpen(true);
       return;
@@ -97,10 +125,10 @@ export default function App() {
 
     const updatedUser = { ...currentUser, savedCareers: updated };
     setCurrentUser(updatedUser);
-    saveMockUser(updatedUser);
+    await syncProfileUpdate(updatedUser);
   };
 
-  const handleSaveUniversity = (uniId: string) => {
+  const handleSaveUniversity = async (uniId: string) => {
     if (!currentUser) {
       setIsAuthOpen(true);
       return;
@@ -116,14 +144,13 @@ export default function App() {
 
     const updatedUser = { ...currentUser, savedUniversities: updated };
     setCurrentUser(updatedUser);
-    saveMockUser(updatedUser);
+    await syncProfileUpdate(updatedUser);
   };
 
-  const handleLoginSuccess = (profile: StudentProfile) => {
+  const handleLoginSuccess = async (profile: StudentProfile) => {
     setCurrentUser(profile);
-    saveMockUser(profile);
-    const pastAssessments = getMockAssessments(profile.id);
-    setAssessmentsList(pastAssessments);
+    const list = await fetchUserAssessments(profile.id);
+    setAssessmentsList(list);
   };
 
   const handleLogout = () => {
@@ -134,14 +161,21 @@ export default function App() {
   };
 
   const handleConfigUpdated = () => {
-    const hasUrl = !!localStorage.getItem('pathcode_supabase_url');
-    const hasKey = !!localStorage.getItem('pathcode_supabase_anon_key');
-    setIsSupabaseConnected(hasUrl && hasKey);
+    const config = getStoredSupabaseConfig();
+    setIsSupabaseConnected(config.isConfigured);
   };
 
+  // Determine container classes according to active vibe
+  const containerClasses =
+    vibe === 'cosmic'
+      ? 'bg-[#090D16] text-slate-100 cosmic-mesh selection:bg-purple-500/30 selection:text-purple-200'
+      : vibe === 'emerald'
+      ? 'bg-[#07110F] text-slate-100 emerald-mesh selection:bg-emerald-500/30 selection:text-emerald-200'
+      : 'bg-[#F8FAFC] text-slate-900 electric-mesh selection:bg-indigo-500/20 selection:text-indigo-950';
+
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-amber-50/40 via-sky-50/30 to-violet-50/40 text-slate-800 selection:bg-indigo-500/20 selection:text-indigo-900 transition-colors">
-      {/* Top Bar Navigation */}
+    <div className={`min-h-screen flex flex-col transition-colors duration-300 ${containerClasses}`}>
+      {/* Top Bar Navigation with Vibe Selector and Supabase Status */}
       <Navbar
         activeTab={activeTab}
         setActiveTab={(tab) => {
@@ -152,6 +186,8 @@ export default function App() {
         onOpenSupabaseModal={() => setIsSupabaseOpen(true)}
         onLogout={handleLogout}
         isSupabaseConnected={isSupabaseConnected}
+        vibe={vibe}
+        onSelectVibe={handleSelectVibe}
       />
 
       {/* Main Content Area */}
@@ -164,12 +200,22 @@ export default function App() {
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex justify-between items-center">
                   <button
                     onClick={() => setCurrentResult(null)}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-1.5 text-xs font-bold text-indigo-700 hover:text-indigo-900 border border-indigo-150 shadow-2xs transition-colors"
+                    className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold border transition-colors ${
+                      vibe === 'cosmic' || vibe === 'emerald'
+                        ? 'bg-white/10 border-white/15 text-purple-300 hover:bg-white/15'
+                        : 'bg-white border-slate-200 text-indigo-700 hover:bg-slate-50'
+                    }`}
                   >
-                    <span>← Back to Home Overview</span>
+                    <span>← Back to Overview</span>
                   </button>
-                  <span className="text-xs font-semibold text-slate-500 bg-white px-3 py-1 rounded-full border border-slate-200">
-                    Active Assessment Result
+                  <span
+                    className={`text-xs font-semibold px-3 py-1 rounded-full border ${
+                      vibe === 'cosmic' || vibe === 'emerald'
+                        ? 'bg-white/5 border-white/10 text-slate-300'
+                        : 'bg-white border-slate-200 text-slate-600'
+                    }`}
+                  >
+                    Active CALIPS Result ({currentResult.pathCode})
                   </span>
                 </div>
                 <ResultsView
@@ -182,6 +228,7 @@ export default function App() {
                   onToggleSaveCareer={handleSaveCareer}
                   savedUniversities={currentUser?.savedUniversities || []}
                   onToggleSaveUniversity={handleSaveUniversity}
+                  vibe={vibe}
                 />
               </div>
             ) : (
@@ -189,6 +236,7 @@ export default function App() {
                 onStartQuiz={() => setActiveTab('quiz')}
                 onStartDirect={() => setActiveTab('direct')}
                 onExploreUniversities={() => setActiveTab('universities')}
+                vibe={vibe}
               />
             )}
           </>
@@ -201,6 +249,7 @@ export default function App() {
             onCancel={() => setActiveTab('home')}
             initialPreferredCountry={currentUser?.preferredCountry || 'Pakistan'}
             initialPreferredCity={currentUser?.preferredCity || 'Karachi'}
+            vibe={vibe}
           />
         )}
 
@@ -211,6 +260,7 @@ export default function App() {
             onToggleSaveCareer={handleSaveCareer}
             savedUniversities={currentUser?.savedUniversities || []}
             onToggleSaveUniversity={handleSaveUniversity}
+            vibe={vibe}
           />
         )}
 
@@ -221,6 +271,7 @@ export default function App() {
             onToggleSaveUniversity={handleSaveUniversity}
             preferredCountry={currentUser?.preferredCountry}
             preferredCity={currentUser?.preferredCity}
+            vibe={vibe}
           />
         )}
 
@@ -229,6 +280,7 @@ export default function App() {
           <CareerLibrary
             savedCareers={currentUser?.savedCareers || []}
             onToggleSaveCareer={handleSaveCareer}
+            vibe={vibe}
           />
         )}
 
@@ -243,11 +295,12 @@ export default function App() {
             }}
             onOpenSupabaseModal={() => setIsSupabaseOpen(true)}
             onStartQuiz={() => setActiveTab('quiz')}
-            onUpdateProfile={(updated) => {
+            onUpdateProfile={async (updated) => {
               setCurrentUser(updated);
-              saveMockUser(updated);
+              await syncProfileUpdate(updated);
             }}
             isSupabaseConnected={isSupabaseConnected}
+            vibe={vibe}
           />
         )}
       </main>
@@ -259,6 +312,7 @@ export default function App() {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
         onOpenSupabase={() => setIsSupabaseOpen(true)}
+        vibe={vibe}
       />
 
       {/* Auth Modal */}
@@ -266,6 +320,7 @@ export default function App() {
         isOpen={isAuthOpen}
         onClose={() => setIsAuthOpen(false)}
         onLoginSuccess={handleLoginSuccess}
+        vibe={vibe}
       />
 
       {/* Supabase & RLS Setup Modal */}
@@ -273,6 +328,7 @@ export default function App() {
         isOpen={isSupabaseOpen}
         onClose={() => setIsSupabaseOpen(false)}
         onConfigUpdated={handleConfigUpdated}
+        vibe={vibe}
       />
     </div>
   );

@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
-import { AssessmentResult, CALIPSDimension } from '../types';
+import { AssessmentResult, CALIPSDimension, ThemeVibe } from '../types';
 import { CALIPS_CATEGORIES } from '../data/calipsData';
-import { UNIVERSITY_PROGRAMS, filterUniversitiesByLocation, POPULAR_COUNTRIES, POPULAR_CITIES } from '../data/universitiesData';
+import {
+  UNIVERSITY_PROGRAMS,
+  filterUniversitiesByLocation,
+  POPULAR_COUNTRIES,
+  getCitiesForCountry
+} from '../data/universitiesData';
 import {
   Printer,
   RotateCcw,
@@ -18,6 +23,7 @@ import {
   Share2,
   MapPin,
   Globe,
+  Database,
   SlidersHorizontal
 } from 'lucide-react';
 
@@ -29,6 +35,7 @@ interface ResultsViewProps {
   onToggleSaveCareer?: (career: string) => void;
   savedUniversities?: string[];
   onToggleSaveUniversity?: (uniId: string) => void;
+  vibe: ThemeVibe;
 }
 
 export const ResultsView: React.FC<ResultsViewProps> = ({
@@ -37,14 +44,14 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
   savedCareers = [],
   onToggleSaveCareer,
   savedUniversities = [],
-  onToggleSaveUniversity
+  onToggleSaveUniversity,
+  vibe
 }) => {
   const [selectedDimension, setSelectedDimension] = useState<CALIPSDimension>(
     result.rankedCategories[0]
   );
   const [copiedLink, setCopiedLink] = useState(false);
 
-  // Dynamic location filter state (initialized from assessment answer)
   const [filterCountry, setFilterCountry] = useState<string>(
     result.preferredCountry || 'Anywhere / Global'
   );
@@ -53,17 +60,17 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
   );
   const [showAllUniversities, setShowAllUniversities] = useState(false);
 
+  const isDark = vibe === 'cosmic' || vibe === 'emerald';
+
   const top3Codes = result.pathCode.split('') as CALIPSDimension[];
   const primaryCat = CALIPS_CATEGORIES[top3Codes[0]];
   const secondaryCat = CALIPS_CATEGORIES[top3Codes[1]];
   const tertiaryCat = CALIPS_CATEGORIES[top3Codes[2]];
 
-  // 1. First get all programs matching user's top CALIPS triad
   const dimensionMatchedUnis = UNIVERSITY_PROGRAMS.filter((prog) =>
     prog.calipsCodes.some((code) => top3Codes.includes(code))
   );
 
-  // 2. Filter programs according to student's chosen city/country
   const locationFilteredUnis = showAllUniversities
     ? dimensionMatchedUnis
     : filterUniversitiesByLocation(dimensionMatchedUnis, filterCountry, filterCity);
@@ -79,359 +86,395 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-10 print:py-0 print:px-0">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8 print:py-0 print:px-0">
       {/* Educational Notice Banner */}
-      <div className="flex items-center gap-3 rounded-2xl border border-indigo-200 bg-white/90 px-5 py-3.5 text-xs text-slate-700 shadow-sm print:border-none print:bg-transparent">
-        <ShieldCheck className="h-5 w-5 shrink-0 text-indigo-600" />
-        <p>
-          <strong className="text-indigo-900 font-bold">Exploratory Guidance Notice:</strong> PathCode is designed as an interactive career-exploration tool to uncover possibilities and spark curiosity—not a rigid or definitive prediction of your life journey.
-        </p>
+      <div
+        className={`flex items-center justify-between gap-3 rounded-2xl border px-5 py-3.5 text-xs shadow-sm transition-all ${
+          isDark
+            ? 'bg-white/5 border-white/10 text-slate-300'
+            : 'bg-indigo-50/80 border-indigo-200 text-indigo-950'
+        }`}
+      >
+        <div className="flex items-center gap-3">
+          <ShieldCheck className="h-5 w-5 shrink-0 text-purple-400" />
+          <p>
+            <strong>Exploratory Guidance Notice:</strong> PathCode is designed as an interactive self-discovery navigator to spark curiosity and map possibilities—not a rigid or definitive prediction of your destiny.
+          </p>
+        </div>
+        <div className="hidden sm:flex items-center gap-1 text-[11px] font-bold text-emerald-400">
+          <Database className="h-3.5 w-3.5" />
+          <span>Synced with Supabase</span>
+        </div>
       </div>
 
-      {/* Hero Badge & Decoded PathCode in Mood-Brightening Colors */}
-      <div className="relative overflow-hidden rounded-3xl border border-indigo-200 bg-gradient-to-br from-white via-indigo-50/40 to-purple-50/30 p-8 sm:p-10 shadow-xl print:border-slate-300 print:bg-white print:text-black">
+      {/* Hero Badge & Decoded PathCode Card */}
+      <div
+        className={`relative overflow-hidden rounded-3xl border p-8 sm:p-10 shadow-2xl transition-all ${
+          isDark
+            ? 'bg-[#0E1424]/90 border-white/10 text-slate-100'
+            : 'bg-white border-slate-200 text-slate-900'
+        }`}
+      >
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           <div className="lg:col-span-8 space-y-5">
-            <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wider text-indigo-700">
-              <span className="flex items-center gap-1.5 rounded-full bg-indigo-100 px-3 py-1 text-indigo-800">
-                <Sparkles className="h-3.5 w-3.5 text-amber-500 fill-amber-400" />
+            <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wider text-purple-400">
+              <span className="flex items-center gap-1.5 rounded-full bg-purple-500/20 px-3 py-1 text-purple-300 border border-purple-500/30">
+                <Sparkles className="h-3.5 w-3.5 text-purple-400" />
                 <span>Assessment Completed · Decoded PathCode</span>
               </span>
-              <span aria-hidden="true" className="text-slate-300">·</span>
-              <span className="font-mono text-slate-500 font-semibold">{new Date(result.createdAt).toLocaleDateString()}</span>
-              {result.preferredCity && result.preferredCity !== 'Any City / Flexible' && (
-                <span className="flex items-center gap-1 rounded-full bg-emerald-100 text-emerald-800 px-3 py-1 text-xs">
-                  <MapPin className="h-3 w-3 text-emerald-600" />
-                  <span>Target: {result.preferredCity} ({result.preferredCountry})</span>
-                </span>
-              )}
+              <span className="opacity-40">·</span>
+              <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>
+                60 Dimensions Evaluated
+              </span>
             </div>
 
-            <div className="flex flex-wrap items-baseline gap-4">
-              <h1 className="font-display text-5xl sm:text-7xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-700 via-purple-700 to-pink-600 bg-clip-text text-transparent print:text-black">
-                {result.pathCode}
-              </h1>
-              <div className="text-2xl sm:text-3xl font-extrabold text-slate-800 print:text-indigo-800">
+            <div className="space-y-2">
+              <h2 className="font-display text-3xl font-extrabold sm:text-5xl lg:text-6xl tracking-tight">
                 {result.primaryArchetype}
+              </h2>
+              <p
+                className={`text-base sm:text-lg leading-relaxed ${
+                  isDark ? 'text-slate-300' : 'text-slate-600'
+                }`}
+              >
+                Your top archetype reflects a dynamic combination of{' '}
+                <strong className="text-purple-400">{primaryCat?.title}</strong>,{' '}
+                <strong className="text-pink-400">{secondaryCat?.title}</strong>, and{' '}
+                <strong className="text-cyan-400">{tertiaryCat?.title}</strong>.
+              </p>
+            </div>
+
+            {/* Target Study Location Highlight */}
+            {(result.preferredCity || result.preferredCountry) && (
+              <div
+                className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-semibold border ${
+                  isDark
+                    ? 'bg-purple-950/40 border-purple-500/30 text-purple-200'
+                    : 'bg-indigo-50 border-indigo-200 text-indigo-900'
+                }`}
+              >
+                <MapPin className="h-4 w-4 text-purple-400" />
+                <span>
+                  Target Study Destination:{' '}
+                  <strong>
+                    {result.preferredCity
+                      ? `${result.preferredCity}, ${result.preferredCountry}`
+                      : result.preferredCountry}
+                  </strong>
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Glowing 3-Letter Code Display */}
+          <div className="lg:col-span-4 flex flex-col items-center justify-center">
+            <div className="relative group">
+              <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 opacity-60 blur-xl group-hover:opacity-100 transition-opacity" />
+              <div
+                className={`relative flex flex-col items-center justify-center rounded-3xl border px-8 py-7 shadow-2xl ${
+                  isDark
+                    ? 'bg-[#12192D] border-white/15'
+                    : 'bg-white border-slate-200'
+                }`}
+              >
+                <span className="text-[11px] font-bold uppercase tracking-widest text-purple-400 mb-1">
+                  Your PathCode
+                </span>
+                <span className="font-display text-5xl sm:text-6xl font-black tracking-widest bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">
+                  {result.pathCode}
+                </span>
+                <span
+                  className={`mt-2 text-xs font-medium ${
+                    isDark ? 'text-slate-400' : 'text-slate-500'
+                  }`}
+                >
+                  Triad: {top3Codes.join(' · ')}
+                </span>
               </div>
             </div>
 
-            <p className="text-sm text-slate-600 max-w-2xl leading-relaxed print:text-slate-700">
-              Your dominant triad combines <strong>{primaryCat.title} ({primaryCat.archetype})</strong>,{' '}
-              <strong>{secondaryCat.title} ({secondaryCat.archetype})</strong>, and{' '}
-              <strong>{tertiaryCat.title} ({tertiaryCat.archetype})</strong>. This code indicates high synergy for interdisciplinary roles balancing problem-solving with creative leadership.
-            </p>
-
-            <div className="pt-2 flex flex-wrap gap-3 print:hidden">
+            <div className="mt-4 flex items-center gap-2">
               <button
                 onClick={handlePrint}
-                className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 shadow-xs transition-colors"
+                className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-all ${
+                  isDark
+                    ? 'border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'
+                    : 'border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
               >
-                <Printer className="h-4 w-4 text-slate-600" />
-                <span>Print / Save PDF</span>
+                <Printer className="h-3.5 w-3.5" />
+                <span>Print PDF</span>
               </button>
               <button
                 onClick={handleShare}
-                className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 shadow-xs transition-colors"
+                className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-all ${
+                  isDark
+                    ? 'border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'
+                    : 'border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
               >
-                <Share2 className="h-4 w-4 text-indigo-600" />
-                <span>{copiedLink ? 'Link Copied!' : 'Share Results'}</span>
+                <Share2 className="h-3.5 w-3.5" />
+                <span>{copiedLink ? 'Link Copied!' : 'Share'}</span>
               </button>
               <button
                 onClick={onRetake}
-                className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 transition-colors"
+                className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-all ${
+                  isDark
+                    ? 'border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'
+                    : 'border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
               >
-                <RotateCcw className="h-4 w-4 text-slate-500" />
-                <span>Retake Quiz</span>
+                <RotateCcw className="h-3.5 w-3.5" />
+                <span>Retake</span>
               </button>
             </div>
           </div>
-
-          {/* Triad Badges */}
-          <div className="lg:col-span-4 grid grid-cols-3 gap-3 text-center">
-            {top3Codes.map((code, idx) => {
-              const cat = CALIPS_CATEGORIES[code];
-              const score = result.scores[code];
-              return (
-                <div
-                  key={code}
-                  className="rounded-2xl border border-indigo-100 bg-white p-4 shadow-sm backdrop-blur-sm print:border-slate-300"
-                >
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">
-                    Tier 0{idx + 1}
-                  </span>
-                  <div
-                    className="font-display text-4xl font-extrabold my-1"
-                    style={{ color: cat.accentColor }}
-                  >
-                    {code}
-                  </div>
-                  <div className="text-xs font-bold text-slate-900 truncate print:text-black">
-                    {cat.title}
-                  </div>
-                  <div className="text-[11px] font-medium text-slate-500 truncate">
-                    {cat.archetype}
-                  </div>
-                  <div className="mt-2 text-xs font-mono font-bold text-indigo-700 bg-indigo-50 py-1 rounded-md">
-                    {score}/10 pts
-                  </div>
-                </div>
-              );
-            })}
-          </div>
         </div>
       </div>
 
-      {/* Six Dimensions Breakdown Visualizer */}
-      <div className="rounded-3xl border border-indigo-100 bg-white p-6 sm:p-8 shadow-lg print:border-slate-300 print:bg-white">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-150 pb-5">
+      {/* 6 Category Dimension Scores Grid */}
+      <div
+        className={`rounded-3xl border p-6 sm:p-8 shadow-xl transition-all ${
+          isDark
+            ? 'bg-[#0E1424]/90 border-white/10 text-slate-100'
+            : 'bg-white border-slate-200 text-slate-900'
+        }`}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
           <div>
-            <h2 className="font-display text-xl font-extrabold text-slate-900 print:text-black">
-              CALIPS 6-Dimension Score Analysis
-            </h2>
-            <p className="text-xs font-medium text-slate-500 mt-0.5">
-              Ranked from your highest personal resonance to lowest
+            <h3 className="font-display text-xl font-extrabold tracking-tight">
+              All 6 CALIPS Dimension Scores
+            </h3>
+            <p
+              className={`text-xs mt-0.5 ${
+                isDark ? 'text-slate-400' : 'text-slate-500'
+              }`}
+            >
+              Ranked from highest resonance to lowest. Click any dimension to inspect details.
             </p>
           </div>
-          <div className="text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
-            Total Possible: 10 points per dimension
-          </div>
+          <span className="text-xs font-mono text-purple-400">
+            Top 3 form your PathCode: <strong>{result.pathCode}</strong>
+          </span>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {result.rankedCategories.map((code, idx) => {
-            const cat = CALIPS_CATEGORIES[code];
-            const score = result.scores[code];
-            const percentage = (score / 10) * 100;
-            const isTop3 = top3Codes.includes(code);
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {result.rankedCategories.map((dim, idx) => {
+            const cat = CALIPS_CATEGORIES[dim];
+            const score = result.scores[dim];
+            const isTop3 = idx < 3;
+            const isSelected = selectedDimension === dim;
 
             return (
-              <div
-                key={code}
-                onClick={() => setSelectedDimension(code)}
-                className={`cursor-pointer rounded-2xl border-2 p-4 transition-all ${
-                  selectedDimension === code
-                    ? 'border-indigo-500 bg-indigo-50/50 shadow-md ring-2 ring-indigo-500/20'
-                    : 'border-slate-150 bg-slate-50/60 hover:border-slate-300 hover:bg-slate-100/60'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <span
-                      className="flex h-8 w-8 items-center justify-center rounded-xl font-display text-sm font-extrabold text-white shadow-xs"
-                      style={{ backgroundColor: cat.accentColor }}
-                    >
-                      {code}
-                    </span>
-                    <div>
-                      <div className="text-xs font-bold text-slate-900">
-                        {cat.title}
-                      </div>
-                      <div className="text-[11px] font-medium text-slate-500">
-                        {cat.archetype}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="text-right">
-                    <div className="font-mono text-xs font-bold text-slate-900">
-                      {score} / 10
-                    </div>
-                    <div className="text-[10px] font-semibold text-indigo-700">
-                      Rank #{idx + 1} {isTop3 && '· Triad'}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Progress Bar */}
-                <div className="mt-3.5 h-2.5 w-full overflow-hidden rounded-full bg-slate-200">
-                  <div
-                    className="h-full rounded-full transition-all duration-500 shadow-2xs"
-                    style={{
-                      width: `${percentage}%`,
-                      backgroundColor: cat.accentColor
-                    }}
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Selected Dimension Deep Dive (From the Reference Materials) */}
-      <div className="rounded-3xl border border-indigo-100 bg-white p-6 sm:p-8 shadow-lg print:border-slate-300 print:bg-white">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-150 pb-6">
-          <div className="flex items-center gap-3.5">
-            <div
-              className="flex h-12 w-12 items-center justify-center rounded-2xl font-display text-2xl font-bold text-white shadow-md"
-              style={{ backgroundColor: CALIPS_CATEGORIES[selectedDimension].accentColor }}
-            >
-              {selectedDimension}
-            </div>
-            <div>
-              <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                Dimension Deep Dive · Selected Profile
-              </div>
-              <h3 className="font-display text-2xl font-extrabold text-slate-900 print:text-black">
-                {CALIPS_CATEGORIES[selectedDimension].title} — {CALIPS_CATEGORIES[selectedDimension].archetype}
-              </h3>
-            </div>
-          </div>
-
-          {/* Dimension Selector Tabs */}
-          <div className="flex flex-wrap gap-1.5 print:hidden">
-            {(['C', 'A', 'L', 'I', 'P', 'S'] as CALIPSDimension[]).map((dim) => (
               <button
                 key={dim}
                 onClick={() => setSelectedDimension(dim)}
-                className={`rounded-xl px-3 py-1.5 text-xs font-bold transition-all ${
-                  selectedDimension === dim
-                    ? 'bg-indigo-600 text-white shadow-sm'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                className={`flex flex-col justify-between rounded-2xl border p-4 text-left transition-all ${
+                  isSelected
+                    ? 'border-purple-400 bg-purple-500/15 shadow-md shadow-purple-500/20 scale-[1.01]'
+                    : isDark
+                    ? 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
+                    : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white'
                 }`}
               >
-                {dim} · {CALIPS_CATEGORIES[dim].archetype}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Narrative Description */}
-        <p className="mt-4 text-sm text-slate-700 italic border-l-4 border-indigo-500 pl-4 py-1 leading-relaxed bg-indigo-50/30 rounded-r-xl print:text-slate-800">
-          "{CALIPS_CATEGORIES[selectedDimension].description}"
-        </p>
-
-        {/* 4 Core Pillars from the reference sheets */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* 1. In-Demand Careers Today */}
-          <div className="rounded-2xl border border-sky-150 bg-sky-50/40 p-5 shadow-2xs">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-sky-800 mb-3">
-              <Briefcase className="h-4 w-4 text-sky-600" />
-              <span>In-Demand Careers Today</span>
-            </div>
-            <ul className="space-y-2 text-sm text-slate-800">
-              {CALIPS_CATEGORIES[selectedDimension].inDemandCareers.map((career) => {
-                const isSaved = savedCareers.includes(career);
-                return (
-                  <li
-                    key={career}
-                    className="flex items-center justify-between rounded-xl bg-white p-2.5 shadow-2xs border border-sky-100 hover:border-sky-300 transition-colors"
-                  >
-                    <span className="font-semibold text-slate-800">{career}</span>
-                    {onToggleSaveCareer && (
-                      <button
-                        onClick={() => onToggleSaveCareer(career)}
-                        className={`text-xs p-1 rounded-lg transition-colors ${
-                          isSaved ? 'text-amber-500' : 'text-slate-400 hover:text-slate-700'
-                        }`}
-                        title={isSaved ? 'Remove from saved' : 'Save career to profile'}
+                <div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="flex h-7 w-7 items-center justify-center rounded-lg font-bold text-xs text-white"
+                        style={{ backgroundColor: cat.accentColor }}
                       >
-                        <Bookmark className="h-4 w-4 fill-current" />
-                      </button>
+                        {dim}
+                      </span>
+                      <span className="font-bold text-sm">{cat.archetype}</span>
+                    </div>
+                    {isTop3 && (
+                      <span className="rounded-full bg-purple-500/20 text-purple-300 text-[10px] font-bold px-2 py-0.5 border border-purple-500/30">
+                        Rank #{idx + 1}
+                      </span>
                     )}
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
+                  </div>
 
-          {/* 2. Related Majors & Programs */}
-          <div className="rounded-2xl border border-rose-150 bg-rose-50/40 p-5 shadow-2xs">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-rose-800 mb-3">
-              <BookOpen className="h-4 w-4 text-rose-600" />
-              <span>Related Majors & Programs</span>
-            </div>
-            <ul className="space-y-2 text-sm text-slate-800">
-              {CALIPS_CATEGORIES[selectedDimension].relatedMajors.map((major) => (
-                <li key={major} className="flex items-start gap-2 bg-white p-2.5 rounded-xl border border-rose-100 shadow-2xs">
-                  <span className="text-rose-500 font-bold">▸</span>
-                  <span className="font-medium">{major}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
+                  <p
+                    className={`text-xs mt-2 line-clamp-2 ${
+                      isDark ? 'text-slate-400' : 'text-slate-600'
+                    }`}
+                  >
+                    {cat.tagline}
+                  </p>
+                </div>
 
-          {/* 3. Career Clusters */}
-          <div className="rounded-2xl border border-amber-150 bg-amber-50/40 p-5 shadow-2xs">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-800 mb-3">
-              <Layers className="h-4 w-4 text-amber-600" />
-              <span>Career Clusters</span>
-            </div>
-            <ul className="space-y-2 text-sm text-slate-800">
-              {CALIPS_CATEGORIES[selectedDimension].careerClusters.map((cluster) => (
-                <li key={cluster} className="flex items-start gap-2 bg-white p-2.5 rounded-xl border border-amber-100 shadow-2xs">
-                  <span className="text-amber-500 font-bold">✦</span>
-                  <span className="font-medium">{cluster}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* 4. Skills to Build Now */}
-          <div className="rounded-2xl border border-emerald-150 bg-emerald-50/40 p-5 shadow-2xs">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-800 mb-3">
-              <Wrench className="h-4 w-4 text-emerald-600" />
-              <span>Skills to Build Now</span>
-            </div>
-            <ul className="space-y-2 text-sm text-slate-800">
-              {CALIPS_CATEGORIES[selectedDimension].skillsToBuild.map((skill) => (
-                <li key={skill} className="flex items-start gap-2.5 bg-white p-2.5 rounded-xl border border-emerald-100 shadow-2xs">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
-                  <span className="font-medium">{skill}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
+                <div className="mt-4 pt-3 border-t border-white/10">
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>
+                      Score
+                    </span>
+                    <span className="font-mono font-bold text-purple-400">
+                      {score} / 10
+                    </span>
+                  </div>
+                  <div
+                    className={`h-2 w-full rounded-full overflow-hidden ${
+                      isDark ? 'bg-white/10' : 'bg-slate-200'
+                    }`}
+                  >
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
+                      style={{ width: `${(score / 10) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              </button>
+            );
+          })}
         </div>
+
+        {/* Selected Dimension Deep Dive */}
+        {selectedDimension && (
+          <div
+            className={`mt-6 rounded-2xl border p-6 transition-all ${
+              isDark
+                ? 'bg-white/[0.03] border-white/10'
+                : 'bg-slate-50 border-slate-200'
+            }`}
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <span
+                className="flex h-8 w-8 items-center justify-center rounded-xl font-bold text-sm text-white"
+                style={{
+                  backgroundColor: CALIPS_CATEGORIES[selectedDimension].accentColor
+                }}
+              >
+                {selectedDimension}
+              </span>
+              <div>
+                <h4 className="font-display font-extrabold text-base">
+                  {CALIPS_CATEGORIES[selectedDimension].title} ·{' '}
+                  {CALIPS_CATEGORIES[selectedDimension].archetype}
+                </h4>
+                <p className="text-xs text-purple-400">
+                  {CALIPS_CATEGORIES[selectedDimension].tagline}
+                </p>
+              </div>
+            </div>
+
+            <p
+              className={`text-xs leading-relaxed ${
+                isDark ? 'text-slate-300' : 'text-slate-600'
+              }`}
+            >
+              {CALIPS_CATEGORIES[selectedDimension].description}
+            </p>
+
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div>
+                <div className="font-bold text-purple-400 mb-1 flex items-center gap-1.5">
+                  <Briefcase className="h-3.5 w-3.5" />
+                  <span>Key Careers:</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {CALIPS_CATEGORIES[selectedDimension].inDemandCareers.map((c) => (
+                    <span
+                      key={c}
+                      className={`rounded-lg px-2.5 py-1 text-[11px] font-medium border ${
+                        isDark
+                          ? 'bg-white/5 border-white/10 text-slate-300'
+                          : 'bg-white border-slate-200 text-slate-800'
+                      }`}
+                    >
+                      {c}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <div className="font-bold text-cyan-400 mb-1 flex items-center gap-1.5">
+                  <Wrench className="h-3.5 w-3.5" />
+                  <span>Skills to Build:</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {CALIPS_CATEGORIES[selectedDimension].skillsToBuild.map((s) => (
+                    <span
+                      key={s}
+                      className={`rounded-lg px-2.5 py-1 text-[11px] font-medium border ${
+                        isDark
+                          ? 'bg-white/5 border-white/10 text-slate-300'
+                          : 'bg-white border-slate-200 text-slate-800'
+                      }`}
+                    >
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Target Location-Tailored Universities (The Key Requested Feature!) */}
-      <div className="rounded-3xl border border-indigo-200 bg-gradient-to-br from-white via-indigo-50/20 to-white p-6 sm:p-8 shadow-xl print:border-slate-300 print:bg-white">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-150 pb-5">
+      {/* Matching University Programs in Target City/Country */}
+      <div
+        className={`rounded-3xl border p-6 sm:p-8 shadow-xl transition-all ${
+          isDark
+            ? 'bg-[#0E1424]/90 border-white/10 text-slate-100'
+            : 'bg-white border-slate-200 text-slate-900'
+        }`}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
           <div>
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-indigo-700">
-              <GraduationCap className="h-4 w-4 text-indigo-600" />
-              <span>Tailored Degree Campuses</span>
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-500/20 text-purple-400">
+                <GraduationCap className="h-4 w-4" />
+              </div>
+              <h3 className="font-display text-xl font-extrabold tracking-tight">
+                Recommended Universities in{' '}
+                <span className="text-purple-400">
+                  {showAllUniversities
+                    ? 'All Global Locations'
+                    : filterCity && filterCity !== 'Any City / Flexible'
+                    ? `${filterCity}, ${filterCountry}`
+                    : filterCountry !== 'Anywhere / Global'
+                    ? filterCountry
+                    : 'Target Destination'}
+                </span>
+              </h3>
             </div>
-            <h3 className="font-display text-2xl font-extrabold text-slate-900 mt-1">
-              Universities for [{result.pathCode}] in{' '}
-              <span className="text-indigo-600">
-                {showAllUniversities
-                  ? 'All Global Locations'
-                  : filterCity && filterCity !== 'Any City / Flexible'
-                  ? `${filterCity}, ${filterCountry}`
-                  : filterCountry !== 'Anywhere / Global'
-                  ? filterCountry
-                  : 'Your Target Location'}
-              </span>
-            </h3>
-            <p className="text-xs text-slate-500 mt-1">
-              Matched with your top triad dimensions ({top3Codes.join(' · ')}) and personalized study location
+            <p
+              className={`text-xs mt-1 ${
+                isDark ? 'text-slate-400' : 'text-slate-500'
+              }`}
+            >
+              Curated for your top triad ({top3Codes.join(' · ')}) and personalized location preferences.
             </p>
           </div>
 
-          {/* Quick Location Switcher / Toggle */}
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              onClick={() => setShowAllUniversities(!showAllUniversities)}
-              className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition-all shadow-xs ${
-                showAllUniversities
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
-              }`}
-            >
-              <Globe className="h-3.5 w-3.5" />
-              <span>{showAllUniversities ? 'Showing All Worldwide' : 'Show All Global Unis'}</span>
-            </button>
-          </div>
+          <button
+            onClick={() => setShowAllUniversities(!showAllUniversities)}
+            className={`flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-xs font-bold transition-all ${
+              showAllUniversities
+                ? 'bg-purple-600 border-purple-500 text-white shadow-md'
+                : isDark
+                ? 'border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'
+                : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100'
+            }`}
+          >
+            <Globe className="h-3.5 w-3.5" />
+            <span>{showAllUniversities ? 'Showing All Global' : 'Show All Global Universities'}</span>
+          </button>
         </div>
 
-        {/* Location selector filters bar */}
-        <div className="mt-4 flex flex-wrap items-center gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-200 text-xs">
-          <span className="font-bold text-slate-700 flex items-center gap-1">
-            <MapPin className="h-3.5 w-3.5 text-indigo-600" />
-            <span>Change Target Location:</span>
+        {/* Change Target Location Filter */}
+        <div
+          className={`mt-4 flex flex-wrap items-center gap-3 p-3 rounded-2xl border text-xs ${
+            isDark
+              ? 'bg-white/5 border-white/10'
+              : 'bg-slate-50 border-slate-200'
+          }`}
+        >
+          <span className="font-bold flex items-center gap-1 text-purple-400">
+            <MapPin className="h-3.5 w-3.5" />
+            <span>Filter By Location:</span>
           </span>
 
           <select
@@ -440,7 +483,11 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
               setFilterCountry(e.target.value);
               setShowAllUniversities(false);
             }}
-            className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 font-semibold text-slate-800 focus:outline-none focus:border-indigo-500"
+            className={`rounded-xl border px-3 py-1.5 font-semibold focus:outline-none focus:ring-1 focus:ring-purple-500 ${
+              isDark
+                ? 'bg-[#141b2d] border-white/10 text-white'
+                : 'bg-white border-slate-200 text-slate-800'
+            }`}
           >
             {POPULAR_COUNTRIES.map((c) => (
               <option key={c} value={c}>
@@ -455,9 +502,13 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
               setFilterCity(e.target.value);
               setShowAllUniversities(false);
             }}
-            className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 font-semibold text-slate-800 focus:outline-none focus:border-indigo-500"
+            className={`rounded-xl border px-3 py-1.5 font-semibold focus:outline-none focus:ring-1 focus:ring-purple-500 ${
+              isDark
+                ? 'bg-[#141b2d] border-white/10 text-white'
+                : 'bg-white border-slate-200 text-slate-800'
+            }`}
           >
-            {POPULAR_CITIES.map((city) => (
+            {getCitiesForCountry(filterCountry).map((city: string) => (
               <option key={city} value={city}>
                 {city}
               </option>
@@ -472,28 +523,38 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
             return (
               <div
                 key={prog.id}
-                className="flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 hover:border-indigo-300 hover:shadow-lg hover:shadow-indigo-500/10 transition-all"
+                className={`flex flex-col justify-between rounded-2xl border p-5 transition-all hover:scale-[1.01] ${
+                  isDark
+                    ? 'bg-white/[0.03] border-white/10 hover:border-purple-500/40 hover:shadow-lg hover:shadow-purple-500/10'
+                    : 'bg-white border-slate-200 hover:border-indigo-300 hover:shadow-lg hover:shadow-indigo-500/10'
+                }`}
               >
                 <div>
-                  <div className="flex items-center justify-between text-xs text-slate-500 mb-2">
-                    <span className="flex items-center gap-1 font-semibold text-slate-700">
-                      <MapPin className="h-3 w-3 text-amber-500" />
+                  <div className="flex items-center justify-between text-xs mb-2">
+                    <span className="flex items-center gap-1 font-semibold text-purple-400">
+                      <MapPin className="h-3 w-3" />
                       <span>{prog.city}, {prog.country}</span>
                     </span>
-                    <span className="font-mono text-indigo-700 font-bold bg-indigo-50 px-2 py-0.5 rounded">
+                    <span
+                      className={`font-mono text-[11px] font-bold px-2 py-0.5 rounded ${
+                        isDark
+                          ? 'bg-purple-500/20 text-purple-300'
+                          : 'bg-indigo-50 text-indigo-700'
+                      }`}
+                    >
                       {prog.tuitionTier}
                     </span>
                   </div>
 
                   <div className="flex items-start justify-between gap-2">
-                    <h4 className="font-display text-base font-extrabold text-slate-900 print:text-black">
+                    <h4 className="font-display text-base font-extrabold">
                       {prog.universityName}
                     </h4>
                     {onToggleSaveUniversity && (
                       <button
                         onClick={() => onToggleSaveUniversity(prog.id)}
-                        className={`text-slate-400 hover:text-amber-500 p-1 rounded-md transition-colors ${
-                          isSaved ? 'text-amber-500' : ''
+                        className={`p-1 rounded-md transition-colors ${
+                          isSaved ? 'text-amber-400' : 'text-slate-500 hover:text-amber-400'
                         }`}
                         title={isSaved ? 'Saved' : 'Bookmark university'}
                       >
@@ -502,33 +563,43 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                     )}
                   </div>
 
-                  <div className="text-xs font-bold text-indigo-600 mt-1">
+                  <div className="text-xs font-bold text-purple-400 mt-1">
                     {prog.programTitle}
                   </div>
 
-                  <p className="mt-3 text-xs text-slate-600 leading-relaxed">
+                  <p
+                    className={`mt-2.5 text-xs leading-relaxed ${
+                      isDark ? 'text-slate-300' : 'text-slate-600'
+                    }`}
+                  >
                     {prog.description}
                   </p>
 
-                  {/* Key majors */}
                   <div className="mt-3 flex flex-wrap gap-1 text-[11px]">
                     {prog.keyMajors.map((m) => (
-                      <span key={m} className="bg-slate-100 px-2 py-0.5 rounded-md text-slate-700 font-medium">
+                      <span
+                        key={m}
+                        className={`rounded-md px-2 py-0.5 font-medium border ${
+                          isDark
+                            ? 'bg-white/5 border-white/10 text-slate-300'
+                            : 'bg-slate-100 border-slate-200 text-slate-700'
+                        }`}
+                      >
                         {m}
                       </span>
                     ))}
                   </div>
                 </div>
 
-                <div className="mt-5 pt-3 border-t border-slate-150 flex items-center justify-between text-xs">
-                  <span className="text-slate-500 text-[11px] font-semibold">
-                    Fits CALIPS: {prog.calipsCodes.join(', ')}
+                <div className="mt-5 pt-3 border-t border-white/10 flex items-center justify-between text-xs">
+                  <span className={isDark ? 'text-slate-400 text-[11px]' : 'text-slate-500 text-[11px]'}>
+                    CALIPS: {prog.calipsCodes.join(', ')}
                   </span>
                   <a
                     href={prog.websiteUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-indigo-600 hover:text-indigo-800 font-bold"
+                    className="flex items-center gap-1 font-bold text-purple-400 hover:text-purple-300"
                   >
                     <span>Visit Portal</span>
                     <ExternalLink className="h-3 w-3" />
@@ -540,17 +611,23 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         </div>
 
         {locationFilteredUnis.length === 0 && (
-          <div className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-slate-500">
-            <MapPin className="mx-auto h-8 w-8 text-slate-400 mb-2" />
-            <p className="text-sm font-semibold text-slate-700">
+          <div
+            className={`mt-6 rounded-2xl border border-dashed p-8 text-center ${
+              isDark
+                ? 'border-white/15 bg-white/5 text-slate-400'
+                : 'border-slate-300 bg-slate-50 text-slate-500'
+            }`}
+          >
+            <MapPin className="mx-auto h-8 w-8 text-purple-400 mb-2" />
+            <p className="text-sm font-semibold">
               No specific universities matched "{filterCity}" in "{filterCountry}" for this triad.
             </p>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs mt-1">
               Click below to view all world-class institutions matching your {result.pathCode} profile.
             </p>
             <button
               onClick={() => setShowAllUniversities(true)}
-              className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-indigo-700"
+              className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-purple-600 px-4 py-2 text-xs font-bold text-white shadow-md hover:bg-purple-700"
             >
               <Globe className="h-3.5 w-3.5" />
               <span>Show All Worldwide Matches ({dimensionMatchedUnis.length})</span>
