@@ -22,9 +22,22 @@ import {
   syncProfileUpdate,
   fetchUserAssessments,
   getStoredSupabaseConfig,
-  hasActiveSession,
-  clearActiveSession
+  hasActiveSession as hasSupabaseSession,
+  clearActiveSession as clearSupabaseSession
 } from './lib/supabase';
+import {
+  auth,
+  db,
+  hasActiveSession as hasFirebaseSession,
+  clearActiveSession as clearFirebaseSession,
+  syncAssessmentToFirebase,
+  fetchUserAssessmentsFromFirebase,
+  syncProfileUpdateToFirebase,
+  getCurrentUserProfile,
+  signOutStudent
+} from './lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 import { Sparkles, Database, Check, Key, Lock, ShieldCheck } from 'lucide-react';
 
 export default function App() {
@@ -57,11 +70,53 @@ export default function App() {
     localStorage.setItem('pathcode_theme_vibe', newVibe);
   };
 
-  // Initialize student profile & fetch assessments
-  // Requirement: Each time you open our website, you are supposed to log in!
+  // Initialize student profile & fetch assessments via Firebase Auth & Firestore
   useEffect(() => {
-    const initData = async () => {
-      if (hasActiveSession()) {
+    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+      if (fbUser) {
+        try {
+          const userDoc = await getDoc(doc(db, 'users', fbUser.uid));
+          if (userDoc.exists()) {
+            const data = userDoc.data();
+            const profile: StudentProfile = {
+              id: fbUser.uid,
+              name: data.name || fbUser.displayName || 'Student',
+              email: data.email || fbUser.email || '',
+              age: data.age || 18,
+              school: data.school || 'College / University',
+              department: data.department || 'Computer Science & IT',
+              preferredCountry: data.preferredCountry || 'Pakistan',
+              preferredCity: data.preferredCity || 'Karachi',
+              savedCareers: data.savedCareers || [],
+              savedUniversities: data.savedUniversities || [],
+              createdAt: data.createdAt || new Date().toISOString()
+            };
+            setCurrentUser(profile);
+            const userAssessments = await fetchUserAssessmentsFromFirebase(fbUser.uid);
+            setAssessmentsList(userAssessments);
+            setIsAuthOpen(false);
+            return;
+          }
+        } catch (e) {
+          console.warn('Notice loading user from Firestore:', e);
+        }
+      }
+
+      // Check cached session
+      const cached = getCurrentUserProfile();
+      if (cached && hasFirebaseSession()) {
+        setCurrentUser(cached);
+        try {
+          const list = await fetchUserAssessmentsFromFirebase(cached.id);
+          setAssessmentsList(list);
+        } catch {
+          // fallback
+        }
+        return;
+      }
+
+      // Fallback check for Supabase session if any
+      if (hasSupabaseSession()) {
         const user = getMockUser();
         if (user) {
           setCurrentUser(user);
@@ -75,12 +130,12 @@ export default function App() {
         }
       }
 
-      // No active session in this tab/window: prompt student to log in each time website opens
+      // No active session: prompt student to log in each time website opens
       setCurrentUser(null);
       setIsAuthOpen(true);
-    };
+    });
 
-    initData();
+    return () => unsubscribe();
   }, []);
 
   const handleAssessmentComplete = async (result: AssessmentResult) => {
@@ -91,11 +146,14 @@ export default function App() {
       if (result.preferredCountry && !currentUser.preferredCountry) {
         currentUser.preferredCountry = result.preferredCountry;
         currentUser.preferredCity = result.preferredCity;
+        await syncProfileUpdateToFirebase(currentUser);
         await syncProfileUpdate(currentUser);
       }
     }
 
-    // Save locally and sync to Supabase database
+    // Save to Firebase Cloud Firestore
+    await syncAssessmentToFirebase(result);
+    // Also sync to Supabase for multi-cloud persistence
     await syncAssessmentToSupabase(result);
 
     setCurrentResult(result);
@@ -120,6 +178,7 @@ export default function App() {
 
     const updatedUser = { ...currentUser, savedCareers: updated };
     setCurrentUser(updatedUser);
+    await syncProfileUpdateToFirebase(updatedUser);
     await syncProfileUpdate(updatedUser);
   };
 
@@ -139,6 +198,7 @@ export default function App() {
 
     const updatedUser = { ...currentUser, savedUniversities: updated };
     setCurrentUser(updatedUser);
+    await syncProfileUpdateToFirebase(updatedUser);
     await syncProfileUpdate(updatedUser);
   };
 
@@ -146,15 +206,22 @@ export default function App() {
     setCurrentUser(profile);
     setIsAuthOpen(false);
     try {
-      const list = await fetchUserAssessments(profile.id);
-      setAssessmentsList(list);
+      const list = await fetchUserAssessmentsFromFirebase(profile.id);
+      if (list && list.length > 0) {
+        setAssessmentsList(list);
+      } else {
+        const supList = await fetchUserAssessments(profile.id);
+        setAssessmentsList(supList);
+      }
     } catch {
       setAssessmentsList(getMockAssessments(profile.id));
     }
   };
 
-  const handleLogout = () => {
-    clearActiveSession();
+  const handleLogout = async () => {
+    await signOutStudent();
+    clearSupabaseSession();
+    clearFirebaseSession();
     setCurrentUser(null);
     setAssessmentsList([]);
     setActiveTab('home');

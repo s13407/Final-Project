@@ -2,15 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { StudentProfile, ThemeVibe } from '../types';
 import { DEPARTMENTS } from '../data/calipsData';
 import { POPULAR_COUNTRIES, getCitiesForCountry } from '../data/universitiesData';
+import { generateUniquePassword } from '../lib/supabase';
 import {
   signUpStudent,
   signInStudent,
-  generateUniquePassword,
-  getLastRegisteredAccount,
-  isFirstTimeVisitor,
-  getStoredSupabaseConfig,
-  RegisteredAccount
-} from '../lib/supabase';
+  getLastEmail,
+  setLastEmail
+} from '../lib/firebase';
 import {
   X,
   User,
@@ -21,7 +19,7 @@ import {
   Sparkles,
   AlertCircle,
   MapPin,
-  Database,
+  Flame,
   ArrowRight,
   Copy,
   Check,
@@ -48,7 +46,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 }) => {
   // Determine if returning or first-time
   const [mode, setMode] = useState<'login' | 'signup'>('login');
-  const [lastAccount, setLastAccount] = useState<RegisteredAccount | null>(null);
+  const [lastEmail, setLastEmailState] = useState<string>('');
 
   // Sign up state
   const [name, setName] = useState('');
@@ -63,7 +61,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   // Login state
   const [loginPassword, setLoginPassword] = useState('');
   const [loginEmail, setLoginEmail] = useState('');
-  const [showDifferentEmail, setShowDifferentEmail] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   // Feedback & Loading
@@ -78,23 +75,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setError(null);
       setCopied(false);
       setRegisteredSuccessUser(null);
-      const isFirstTime = isFirstTimeVisitor();
-      const last = getLastRegisteredAccount();
-      setLastAccount(last);
+      const savedEmail = getLastEmail();
+      setLastEmailState(savedEmail);
 
-      if (isFirstTime) {
-        setMode('signup');
-      } else {
+      if (savedEmail) {
+        setLoginEmail(savedEmail);
         setMode('login');
+      } else {
+        setMode('signup');
       }
 
       if (!generatedPassword) {
         setGeneratedPassword(generateUniquePassword());
-      }
-
-      if (last) {
-        setLoginEmail(last.email);
-        setShowDifferentEmail(false);
       }
     }
   }, [isOpen]);
@@ -102,7 +94,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   if (!isOpen) return null;
 
   const isDark = vibe !== 'electric';
-  const { isConfigured: isSupabaseConfigured } = getStoredSupabaseConfig();
 
   const handleGenerateNewPassword = (e?: React.MouseEvent) => {
     if (e) e.preventDefault();
@@ -120,23 +111,29 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     e.preventDefault();
     setError(null);
 
+    const emailToUse = loginEmail.trim();
     const passToSubmit = loginPassword.trim();
+
+    if (!emailToUse) {
+      setError('Please enter your registered student email address.');
+      return;
+    }
     if (!passToSubmit) {
-      setError('Please enter your unique student password.');
+      setError('Please enter your password.');
       return;
     }
 
     setLoading(true);
     try {
-      const emailToUse = showDifferentEmail ? loginEmail.trim() : (lastAccount?.email || loginEmail.trim());
-      const res = await signInStudent(passToSubmit, emailToUse || undefined);
+      const res = await signInStudent(emailToUse, passToSubmit);
 
       if (res.error || !res.profile) {
-        setError(res.error || 'Invalid password. If this is your first visit, please sign up to get a unique password.');
+        setError(res.error || 'Invalid email or password. If this is your first visit, please sign up first.');
         setLoading(false);
         return;
       }
 
+      setLastEmail(emailToUse);
       onLoginSuccess(res.profile);
       onClose();
     } catch (err: any) {
@@ -156,6 +153,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
 
     const uniquePass = generatedPassword || generateUniquePassword();
+    if (uniquePass.length < 6) {
+      setError('Password must be at least 6 characters.');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -176,7 +178,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         return;
       }
 
-      // Display the success confirmation card with their unique password
+      setLastEmail(email.trim());
       setRegisteredSuccessUser(res.profile);
     } catch (err: any) {
       setError(err?.message || 'Registration failed. Please check your connection.');
@@ -194,9 +196,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   const handleFillDemo = () => {
     setMode('login');
-    setLoginPassword('COMMECS-2026-STAR');
     setLoginEmail('s13407@commecscollege.edu.pk');
-    setShowDifferentEmail(true);
+    setLoginPassword('COMMECS-2026-STAR');
   };
 
   return (
@@ -230,13 +231,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
             <div>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 px-3 py-1 text-xs font-bold text-emerald-400 mb-2">
-                <Check className="h-3.5 w-3.5" /> First-Time Registration Complete
+                <Check className="h-3.5 w-3.5" /> Firebase Registration Complete
               </span>
               <h2 className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight">
                 Welcome, {registeredSuccessUser.name}!
               </h2>
               <p className={`mt-1.5 text-xs sm:text-sm max-w-md mx-auto ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-                Your student profile has been created and synced with the Supabase database.
+                Your student profile has been created and synced with Firebase Authentication & Cloud Firestore.
               </p>
             </div>
 
@@ -250,10 +251,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             >
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-500">
-                  <Key className="h-4 w-4" /> Your Unique Student Password
+                  <Key className="h-4 w-4" /> Your Student Password
                 </span>
                 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400">
-                  Generated for you
+                  Firebase Credentials
                 </span>
               </div>
 
@@ -297,7 +298,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               >
                 <AlertCircle className="h-4 w-4 shrink-0 text-amber-400 mt-0.5" />
                 <p className="leading-relaxed">
-                  <strong>Save this password!</strong> Each time you open our website, you are supposed to log in. You will just enter this unique password instead of signing up again.
+                  <strong>Save this password!</strong> Whenever you reopen PathCode, you can log in directly with your email (<strong>{registeredSuccessUser.email}</strong>) and this password.
                 </p>
               </div>
             </div>
@@ -333,18 +334,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 }`}
               >
                 {mode === 'login'
-                  ? 'Each time you open our website, enter your unique password to log in.'
-                  : 'Visiting for the first time? Sign up once, and a unique password is created for your future logins.'}
+                  ? 'Sign in with your registered email and password.'
+                  : 'Visiting for the first time? Register once with Firebase to save your profile permanently.'}
               </p>
 
-              {/* Database indicator */}
+              {/* Firebase indicator */}
               <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 px-3 py-0.5 text-[11px] font-semibold text-emerald-400">
-                <Database className="h-3 w-3" />
-                <span>
-                  {isSupabaseConfigured
-                    ? 'Connected to Supabase PostgreSQL'
-                    : 'Supabase Database Active'}
-                </span>
+                <Flame className="h-3 w-3 text-amber-500" />
+                <span>Firebase Authentication & Firestore Active</span>
               </div>
             </div>
 
@@ -393,7 +390,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 }`}
               >
                 <Sparkles className="h-3.5 w-3.5" />
-                <span>First-Time Visitor (Sign In)</span>
+                <span>First-Time Visitor (Sign Up)</span>
               </button>
             </div>
 
@@ -408,64 +405,33 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             {/* ----------------- SUB-VIEW: RETURNING STUDENT LOG IN ----------------- */}
             {mode === 'login' ? (
               <form onSubmit={handleLoginSubmit} className="mt-5 space-y-4">
-                {/* Last Recognized Account Pill (if available) */}
-                {lastAccount && !showDifferentEmail ? (
-                  <div
-                    className={`rounded-2xl border p-3 flex items-center justify-between ${
-                      isDark ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-slate-200'
+                {/* Email Address */}
+                <div>
+                  <label
+                    className={`block text-[11px] font-bold uppercase tracking-wider mb-1 ${
+                      isDark ? 'text-slate-300' : 'text-slate-700'
                     }`}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-400 text-slate-950 font-bold text-xs">
-                        {lastAccount.name.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-xs font-bold">{lastAccount.name}</span>
-                          <span className="text-[10px] text-emerald-400 font-semibold flex items-center gap-0.5">
-                            <UserCheck className="h-2.5 w-2.5" /> Registered
-                          </span>
-                        </div>
-                        <span className={`text-[11px] block ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                          {lastAccount.email}
-                        </span>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setShowDifferentEmail(true)}
-                      className="text-[11px] font-bold text-amber-400 hover:text-amber-300 underline"
-                    >
-                      Switch
-                    </button>
-                  </div>
-                ) : (
-                  <div>
-                    <label
-                      className={`block text-[11px] font-bold uppercase tracking-wider mb-1 ${
-                        isDark ? 'text-slate-300' : 'text-slate-700'
+                    Student Email Address
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
+                    <input
+                      type="email"
+                      required
+                      placeholder="e.g. s13407@commecscollege.edu.pk"
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
+                      className={`w-full rounded-2xl border py-2.5 pl-10 pr-4 text-xs font-medium transition-all focus:outline-none focus:ring-2 focus:ring-amber-500 ${
+                        isDark
+                          ? 'bg-white/5 border-white/10 text-white placeholder-slate-500 focus:bg-white/10'
+                          : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white'
                       }`}
-                    >
-                      Student Email / ID
-                    </label>
-                    <div className="relative">
-                      <Mail className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
-                      <input
-                        type="email"
-                        placeholder="s13407@commecscollege.edu.pk"
-                        value={loginEmail}
-                        onChange={(e) => setLoginEmail(e.target.value)}
-                        className={`w-full rounded-2xl border py-2.5 pl-10 pr-4 text-xs font-medium transition-all focus:outline-none focus:ring-2 focus:ring-amber-500 ${
-                          isDark
-                            ? 'bg-white/5 border-white/10 text-white placeholder-slate-500 focus:bg-white/10'
-                            : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white'
-                        }`}
-                      />
-                    </div>
+                    />
                   </div>
-                )}
+                </div>
 
-                {/* Unique Password Input */}
+                {/* Password Input */}
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label
@@ -473,26 +439,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         isDark ? 'text-slate-300' : 'text-slate-700'
                       }`}
                     >
-                      Your Unique Password
+                      Password
                     </label>
-                    {lastAccount && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setLoginPassword(lastAccount.password);
-                        }}
-                        className="text-[10px] font-bold text-amber-400 hover:text-amber-300"
-                      >
-                        Auto-fill saved password
-                      </button>
-                    )}
                   </div>
                   <div className="relative">
-                    <Key className="absolute left-3.5 top-3 h-4 w-4 text-amber-400" />
+                    <Lock className="absolute left-3.5 top-3 h-4 w-4 text-amber-400" />
                     <input
                       type={showPassword ? 'text' : 'password'}
                       required
-                      placeholder="e.g. PATH-7842-STAR or COMMECS-2026-STAR"
+                      placeholder="Enter your student password"
                       value={loginPassword}
                       onChange={(e) => setLoginPassword(e.target.value)}
                       className={`w-full rounded-2xl border py-2.5 pl-10 pr-12 font-mono text-xs font-bold tracking-wider transition-all focus:outline-none focus:ring-2 focus:ring-amber-500 ${
@@ -510,7 +465,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     </button>
                   </div>
                   <p className={`mt-1.5 text-[11px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                    💡 Just enter the unique password made during your first visit. You don&apos;t have to sign up again!
+                    🔒 Secure Firebase Authentication checks credentials in real-time.
                   </p>
                 </div>
 
@@ -520,18 +475,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   className="w-full flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 py-3 text-xs font-black text-slate-950 shadow-lg shadow-amber-500/20 hover:opacity-95 transition-all active:scale-98 disabled:opacity-50"
                 >
                   {loading ? (
-                    <span>Verifying Unique Password...</span>
+                    <span>Authenticating with Firebase...</span>
                   ) : (
                     <>
-                      <span>Log In with Unique Password</span>
+                      <span>Log In to PathCode</span>
                       <ArrowRight className="h-4 w-4" />
                     </>
                   )}
                 </button>
               </form>
             ) : (
-              /* ----------------- SUB-VIEW: FIRST TIME VISITOR SIGN IN ----------------- */
-              <form onSubmit={handleSignupSubmit} className="mt-5 space-y-3.5">
+              /* ----------------- SUB-VIEW: FIRST-TIME REGISTRATION ----------------- */
+              <form onSubmit={handleSignupSubmit} className="mt-5 space-y-4">
                 <div>
                   <label
                     className={`block text-[11px] font-bold uppercase tracking-wider mb-1 ${
@@ -720,7 +675,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   </div>
                 </div>
 
-                {/* Unique Password Made for User */}
+                {/* Password / Unique Password */}
                 <div
                   className={`rounded-2xl border p-4 space-y-2.5 transition-all ${
                     isDark
@@ -730,7 +685,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 >
                   <div className="flex items-center justify-between">
                     <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-400">
-                      <Key className="h-4 w-4" /> Unique Password Made For You
+                      <Key className="h-4 w-4" /> Password for Your Firebase Account
                     </span>
                     <button
                       type="button"
@@ -748,13 +703,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       isDark ? 'bg-black/50 border-white/10' : 'bg-white border-amber-200'
                     }`}
                   >
-                    <code className="font-mono text-sm sm:text-base font-black tracking-widest text-amber-400">
-                      {generatedPassword}
-                    </code>
+                    <input
+                      type="text"
+                      value={generatedPassword}
+                      onChange={(e) => setGeneratedPassword(e.target.value)}
+                      className="font-mono text-sm sm:text-base font-black tracking-widest text-amber-400 bg-transparent border-none outline-none w-full"
+                    />
                     <button
                       type="button"
                       onClick={() => handleCopyPassword(generatedPassword)}
-                      className={`flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-bold transition-all ${
+                      className={`flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-bold transition-all shrink-0 ml-2 ${
                         copied
                           ? 'bg-emerald-500 text-white'
                           : isDark
@@ -777,7 +735,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   </div>
 
                   <p className={`text-[11px] leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-                    ✨ Whenever you reopen this website, you just enter this unique password to log in without signing in again.
+                    ✨ This will be your permanent Firebase password. You can keep this unique generated password or type your own.
                   </p>
                 </div>
 
@@ -787,10 +745,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   className="w-full flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 py-3 text-xs font-bold text-white shadow-lg shadow-purple-500/25 hover:opacity-95 transition-all active:scale-98 disabled:opacity-50"
                 >
                   {loading ? (
-                    <span>Registering with Supabase...</span>
+                    <span>Registering with Firebase Auth...</span>
                   ) : (
                     <>
-                      <span>Complete Registration & Save Password</span>
+                      <span>Complete Registration with Firebase</span>
                       <ArrowRight className="h-4 w-4" />
                     </>
                   )}
@@ -801,14 +759,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             {/* Quick Demo Pre-Fill */}
             <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-4 text-[11px]">
               <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>
-                Want to test returning login immediately?
+                Want to prefill demo credentials?
               </span>
               <button
                 type="button"
                 onClick={handleFillDemo}
                 className="font-bold text-amber-400 hover:text-amber-300 underline underline-offset-2"
               >
-                Log In as Demo (Ayesha Khan)
+                Fill Demo (Ayesha Khan)
               </button>
             </div>
           </>
