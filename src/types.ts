@@ -72,6 +72,7 @@ export interface UniversityProgram {
   description: string;
   keyMajors: string[];
   websiteUrl: string;
+  institutionType?: 'Local' | 'Private';
   isLiveGoogleResult?: boolean;
   sourceAttribution?: string;
 }

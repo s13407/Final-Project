@@ -535,15 +535,26 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                       <MapPin className="h-3 w-3" />
                       <span>{prog.city}, {prog.country}</span>
                     </span>
-                    <span
-                      className={`font-mono text-[11px] font-bold px-2 py-0.5 rounded ${
-                        isDark
-                          ? 'bg-purple-500/20 text-purple-300'
-                          : 'bg-indigo-50 text-indigo-700'
-                      }`}
-                    >
-                      {prog.tuitionTier}
-                    </span>
+                    <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                          prog.institutionType === 'Private'
+                            ? 'bg-violet-500/15 border-violet-500/30 text-violet-400'
+                            : 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
+                        }`}
+                      >
+                        {prog.institutionType === 'Private' ? 'Private' : 'Local'}
+                      </span>
+                      <span
+                        className={`font-mono text-[11px] font-bold px-2 py-0.5 rounded ${
+                          isDark
+                            ? 'bg-purple-500/20 text-purple-300'
+                            : 'bg-indigo-50 text-indigo-700'
+                        }`}
+                      >
+                        {prog.tuitionTier}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="flex items-start justify-between gap-2">

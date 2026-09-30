@@ -485,7 +485,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     }`}
                   >
                     <div className="flex items-center justify-between font-bold">
-                      <span>{u.universityName}</span>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span>{u.universityName}</span>
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                            u.institutionType === 'Private'
+                              ? 'bg-violet-500/15 border-violet-500/30 text-violet-400'
+                              : 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
+                          }`}
+                        >
+                          {u.institutionType === 'Private' ? 'Private' : 'Local'}
+                        </span>
+                      </div>
                       <span className="text-cyan-400 font-mono">{u.city}, {u.country}</span>
                     </div>
                     <div className="text-purple-400 font-semibold mt-1">

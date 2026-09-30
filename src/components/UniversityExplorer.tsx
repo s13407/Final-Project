@@ -21,6 +21,7 @@ import {
   Loader2,
   ShieldCheck,
   Building2,
+  Landmark,
   SlidersHorizontal,
   Compass
 } from 'lucide-react';
@@ -45,6 +46,7 @@ export const UniversityExplorer: React.FC<UniversityExplorerProps> = ({
   const [selectedCountry, setSelectedCountry] = useState<string>(preferredCountry || 'ALL');
   const [selectedCity, setSelectedCity] = useState<string>(preferredCity || 'ALL');
   const [customCityInput, setCustomCityInput] = useState('');
+  const [selectedType, setSelectedType] = useState<'ALL' | 'LOCAL' | 'PRIVATE'>('ALL');
 
   // Live Google & Web search state
   const [liveGoogleResults, setLiveGoogleResults] = useState<UniversityProgram[]>(() => {
@@ -79,14 +81,20 @@ export const UniversityExplorer: React.FC<UniversityExplorerProps> = ({
   // Filter combined programs by user criteria
   const filteredPrograms = allAvailablePrograms.filter((prog) => {
     const effectiveCity = customCityInput.trim() || selectedCity;
+    const searchLower = searchTerm.toLowerCase().trim();
+
+    const isProgPrivate = prog.institutionType === 'Private';
+    const isProgLocal = !isProgPrivate; // Local / Public sector
 
     const matchesSearch =
       !searchTerm ||
-      prog.universityName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      prog.programTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      prog.keyMajors.some((m) => m.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      prog.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      prog.country.toLowerCase().includes(searchTerm.toLowerCase());
+      prog.universityName.toLowerCase().includes(searchLower) ||
+      prog.programTitle.toLowerCase().includes(searchLower) ||
+      prog.keyMajors.some((m) => m.toLowerCase().includes(searchLower)) ||
+      prog.city.toLowerCase().includes(searchLower) ||
+      prog.country.toLowerCase().includes(searchLower) ||
+      (searchLower === 'private' && isProgPrivate) ||
+      ((searchLower === 'local' || searchLower === 'public') && isProgLocal);
 
     const matchesDimension =
       selectedDimension === 'ALL' || prog.calipsCodes.includes(selectedDimension);
@@ -107,8 +115,18 @@ export const UniversityExplorer: React.FC<UniversityExplorerProps> = ({
       (activeViewFilter === 'GOOGLE' && prog.isLiveGoogleResult) ||
       (activeViewFilter === 'SAVED' && savedUniversities.includes(prog.id));
 
-    return matchesSearch && matchesDimension && matchesCountry && matchesCity && matchesViewFilter;
+    const matchesType =
+      selectedType === 'ALL' ||
+      (selectedType === 'PRIVATE' && isProgPrivate) ||
+      (selectedType === 'LOCAL' && isProgLocal);
+
+    return matchesSearch && matchesDimension && matchesCountry && matchesCity && matchesViewFilter && matchesType;
   });
+
+  // Calculate sector breakdowns
+  const totalProgramsCount = filteredPrograms.length;
+  const localProgramsCount = filteredPrograms.filter((p) => p.institutionType !== 'Private').length;
+  const privateProgramsCount = filteredPrograms.filter((p) => p.institutionType === 'Private').length;
 
   // Execute Live Google & Web search
   const handleLiveGoogleSearch = async () => {
@@ -434,11 +452,56 @@ export const UniversityExplorer: React.FC<UniversityExplorerProps> = ({
           })}
         </div>
 
+        {/* Sector / Institution Type Filter Tabs: Local vs Private */}
+        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-white/10 text-xs">
+          <span className={`text-[11px] font-bold mr-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+            Institution Sector:
+          </span>
+          <button
+            onClick={() => setSelectedType('ALL')}
+            className={`rounded-xl px-3 py-1 text-xs font-bold transition-all ${
+              selectedType === 'ALL'
+                ? 'bg-purple-600 text-white shadow-xs'
+                : isDark
+                ? 'bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10'
+                : 'bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200'
+            }`}
+          >
+            All (Local & Private)
+          </button>
+          <button
+            onClick={() => setSelectedType('LOCAL')}
+            className={`flex items-center gap-1.5 rounded-xl px-3 py-1 text-xs font-bold transition-all ${
+              selectedType === 'LOCAL'
+                ? 'bg-emerald-600 text-white shadow-xs'
+                : isDark
+                ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20'
+                : 'bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100'
+            }`}
+          >
+            <Landmark className="h-3 w-3" />
+            <span>🏛️ Local Universities ({localProgramsCount})</span>
+          </button>
+          <button
+            onClick={() => setSelectedType('PRIVATE')}
+            className={`flex items-center gap-1.5 rounded-xl px-3 py-1 text-xs font-bold transition-all ${
+              selectedType === 'PRIVATE'
+                ? 'bg-violet-600 text-white shadow-xs'
+                : isDark
+                ? 'bg-violet-500/10 border border-violet-500/20 text-violet-400 hover:bg-violet-500/20'
+                : 'bg-violet-50 border border-violet-200 text-violet-700 hover:bg-violet-100'
+            }`}
+          >
+            <Building2 className="h-3 w-3" />
+            <span>🏢 Private Universities ({privateProgramsCount})</span>
+          </button>
+        </div>
+
         {/* Results Counter & Source Filter Tabs */}
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-white/10 text-xs">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className={`font-bold ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-              Showing {filteredPrograms.length} Universities
+              Showing {filteredPrograms.length} Universities ({localProgramsCount} Local · {privateProgramsCount} Private)
             </span>
             {selectedCountry !== 'ALL' && (
               <span className="rounded-full bg-purple-500/10 border border-purple-500/20 px-2.5 py-0.5 text-[11px] font-bold text-purple-400">
@@ -463,7 +526,7 @@ export const UniversityExplorer: React.FC<UniversityExplorerProps> = ({
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              All
+              All Sources
             </button>
             <button
               onClick={() => setActiveViewFilter('GOOGLE')}
@@ -499,6 +562,8 @@ export const UniversityExplorer: React.FC<UniversityExplorerProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {filteredPrograms.map((prog) => {
           const isSaved = savedUniversities.includes(prog.id);
+          const isPrivate = prog.institutionType === 'Private';
+
           return (
             <div
               key={prog.id}
@@ -513,7 +578,7 @@ export const UniversityExplorer: React.FC<UniversityExplorerProps> = ({
               }`}
             >
               <div>
-                {/* Top Location & Badge Bar */}
+                {/* Top Location & Sector Badge Bar */}
                 <div className="flex items-center justify-between text-xs mb-2">
                   <span className="flex items-center gap-1 font-semibold text-purple-400">
                     <MapPin className="h-3 w-3" />
@@ -521,9 +586,22 @@ export const UniversityExplorer: React.FC<UniversityExplorerProps> = ({
                       {prog.city}, {prog.country}
                     </span>
                   </span>
-                  <div className="flex items-center gap-1.5">
-                    {prog.isLiveGoogleResult && (
+                  <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                    {/* Mentioning which is Private and Local explicitly */}
+                    {isPrivate ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-violet-500/15 border border-violet-500/30 px-2 py-0.5 text-[10px] font-bold text-violet-400">
+                        <Building2 className="h-2.5 w-2.5" />
+                        <span>Private University</span>
+                      </span>
+                    ) : (
                       <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 text-[10px] font-bold text-emerald-400">
+                        <Landmark className="h-2.5 w-2.5" />
+                        <span>Local University</span>
+                      </span>
+                    )}
+
+                    {prog.isLiveGoogleResult && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-cyan-500/15 border border-cyan-500/30 px-2 py-0.5 text-[10px] font-bold text-cyan-400">
                         <Sparkles className="h-2.5 w-2.5" />
                         <span>Google Search</span>
                       </span>
@@ -540,12 +618,19 @@ export const UniversityExplorer: React.FC<UniversityExplorerProps> = ({
 
                 {/* University Name & Bookmark Action */}
                 <div className="flex items-start justify-between gap-2">
-                  <h3 className="font-display text-base font-extrabold leading-snug">
-                    {prog.universityName}
-                  </h3>
+                  <div>
+                    <h3 className="font-display text-base font-extrabold leading-snug">
+                      {prog.universityName}
+                    </h3>
+                    <div className="mt-0.5">
+                      <span className={`text-[10px] font-medium ${isPrivate ? 'text-violet-400' : 'text-emerald-400'}`}>
+                        {isPrivate ? 'Private Sector Institution' : 'Local / Public Sector Institution'}
+                      </span>
+                    </div>
+                  </div>
                   <button
                     onClick={() => handleToggleSave(prog)}
-                    className={`p-1.5 rounded-lg transition-colors ${
+                    className={`p-1.5 rounded-lg transition-colors shrink-0 ${
                       isSaved ? 'text-amber-400 bg-amber-500/10' : 'text-slate-400 hover:text-amber-400'
                     }`}
                     title={isSaved ? 'Remove from saved' : 'Bookmark university'}
@@ -648,6 +733,7 @@ export const UniversityExplorer: React.FC<UniversityExplorerProps> = ({
                 setSelectedCountry('ALL');
                 setSelectedCity('ALL');
                 setCustomCityInput('');
+                setSelectedType('ALL');
                 setActiveViewFilter('ALL');
               }}
               className="rounded-2xl border border-white/15 px-4 py-2 text-xs font-bold hover:bg-white/10 transition-colors"

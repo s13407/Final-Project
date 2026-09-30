@@ -582,6 +582,31 @@ app.post('/api/universities/search', async (req: Request, res: Response) => {
         const tuitionTiers: ('$' | '$$' | '$$$' | '$$$$')[] = ['$', '$$', '$$$'];
         const tuitionTier = tuitionTiers[idx % tuitionTiers.length];
 
+        // Determine whether institution is Private or Local (Public / State / Chartered)
+        const textForType = (uniName + ' ' + (description || '')).toLowerCase();
+        const privateKeywords = [
+          'private', 'independent', 'proprietary', 'privately', 'for-profit', 'non-profit private',
+          'foundation university', 'catholic', 'jesuit', 'pontifical', 'habib', 'aga khan', 'fast',
+          'lums', 'szabist', 'ziauddin', 'iobm', 'beaconhouse', 'giki', 'harvard', 'stanford',
+          'mit', 'yale', 'columbia', 'princeton', 'nyu', 'cornell', 'duke', 'northwestern', 'chicago',
+          'bocconi', 'ie university', 'hamdard', 'greenwich', 'suffa', 'salim habib'
+        ];
+        const localKeywords = [
+          'public', 'state university', 'national university', 'federal university', 'provincial',
+          'government', 'municipal', 'cantonal', 'prefecture', 'open university', 'ucla', 'berkeley',
+          'punjab', 'karachi', 'peshawar', 'ned', 'uet', 'nust', 'comsats', 'pieas', 'oxford', 'cambridge',
+          'toronto', 'melbourne', 'sydney', 'tum', 'lmu', 'sorbonne', 'eth', 'king saud', 'singapore', 'nus'
+        ];
+
+        let institutionType: 'Local' | 'Private' = 'Local';
+        if (privateKeywords.some((pk) => textForType.includes(pk))) {
+          institutionType = 'Private';
+        } else if (localKeywords.some((lk) => textForType.includes(lk))) {
+          institutionType = 'Local';
+        } else {
+          institutionType = (uniName.toLowerCase().includes('state') || uniName.toLowerCase().includes('national') || uniName.toLowerCase().startsWith('university of')) ? 'Local' : 'Local';
+        }
+
         return {
           id: 'live-uni-' + idx + '-' + hashString(uniName),
           universityName: uniName,
@@ -594,6 +619,7 @@ app.post('/api/universities/search', async (req: Request, res: Response) => {
           description,
           keyMajors,
           websiteUrl: webUrl,
+          institutionType,
           isLiveGoogleResult: true,
           sourceAttribution: 'Google Search & Global Academic Registry'
         };
