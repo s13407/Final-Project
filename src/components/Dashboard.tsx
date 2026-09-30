@@ -3,7 +3,8 @@ import { StudentProfile, AssessmentResult, ThemeVibe } from '../types';
 import {
   UNIVERSITY_PROGRAMS,
   POPULAR_COUNTRIES,
-  getCitiesForCountry
+  getCitiesForCountry,
+  getAllUniversityPrograms
 } from '../data/universitiesData';
 import { SUPABASE_RLS_SQL, getStoredSupabaseConfig } from '../lib/supabase';
 import {
@@ -74,7 +75,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     setIsEditingLocation(false);
   };
 
-  const savedUnis = UNIVERSITY_PROGRAMS.filter((p) =>
+  const savedUnis = getAllUniversityPrograms().filter((p) =>
     currentUser.savedUniversities?.includes(p.id)
   );
 

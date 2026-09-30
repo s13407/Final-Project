@@ -1,6 +1,7 @@
 import { UniversityProgram } from '../types';
 
-export const POPULAR_COUNTRIES = [
+// Complete list of all 195+ sovereign countries and major study territories of the world
+export const ALL_WORLD_COUNTRIES = [
   'Anywhere / Global',
   'Pakistan',
   'United States',
@@ -9,64 +10,621 @@ export const POPULAR_COUNTRIES = [
   'Australia',
   'Germany',
   'United Arab Emirates',
+  'Saudi Arabia',
   'Singapore',
-  'Netherlands'
-] as const;
+  'Turkey',
+  'Malaysia',
+  'China',
+  'Japan',
+  'South Korea',
+  'France',
+  'Italy',
+  'Spain',
+  'Netherlands',
+  'Switzerland',
+  'Sweden',
+  'Ireland',
+  'New Zealand',
+  'Qatar',
+  'India',
+  'Afghanistan',
+  'Albania',
+  'Algeria',
+  'Andorra',
+  'Angola',
+  'Antigua and Barbuda',
+  'Argentina',
+  'Armenia',
+  'Austria',
+  'Azerbaijan',
+  'Bahamas',
+  'Bahrain',
+  'Bangladesh',
+  'Barbados',
+  'Belarus',
+  'Belgium',
+  'Belize',
+  'Benin',
+  'Bhutan',
+  'Bolivia',
+  'Bosnia and Herzegovina',
+  'Botswana',
+  'Brazil',
+  'Brunei',
+  'Bulgaria',
+  'Burkina Faso',
+  'Burundi',
+  'Cabo Verde',
+  'Cambodia',
+  'Cameroon',
+  'Central African Republic',
+  'Chad',
+  'Chile',
+  'Colombia',
+  'Comoros',
+  'Congo',
+  'Costa Rica',
+  'Croatia',
+  'Cuba',
+  'Cyprus',
+  'Czech Republic',
+  'Denmark',
+  'Djibouti',
+  'Dominica',
+  'Dominican Republic',
+  'DR Congo',
+  'Ecuador',
+  'Egypt',
+  'El Salvador',
+  'Equatorial Guinea',
+  'Eritrea',
+  'Estonia',
+  'Eswatini',
+  'Ethiopia',
+  'Fiji',
+  'Finland',
+  'Gabon',
+  'Gambia',
+  'Georgia',
+  'Ghana',
+  'Greece',
+  'Grenada',
+  'Guatemala',
+  'Guinea',
+  'Guyana',
+  'Haiti',
+  'Honduras',
+  'Hungary',
+  'Iceland',
+  'Indonesia',
+  'Iran',
+  'Iraq',
+  'Israel',
+  'Jamaica',
+  'Jordan',
+  'Kazakhstan',
+  'Kenya',
+  'Kiribati',
+  'Kuwait',
+  'Kyrgyzstan',
+  'Laos',
+  'Latvia',
+  'Lebanon',
+  'Lesotho',
+  'Liberia',
+  'Libya',
+  'Liechtenstein',
+  'Lithuania',
+  'Luxembourg',
+  'Madagascar',
+  'Malawi',
+  'Maldives',
+  'Mali',
+  'Malta',
+  'Marshall Islands',
+  'Mauritania',
+  'Mauritius',
+  'Mexico',
+  'Micronesia',
+  'Moldova',
+  'Monaco',
+  'Mongolia',
+  'Montenegro',
+  'Morocco',
+  'Mozambique',
+  'Myanmar',
+  'Namibia',
+  'Nauru',
+  'Nepal',
+  'Nicaragua',
+  'Niger',
+  'Nigeria',
+  'North Korea',
+  'North Macedonia',
+  'Norway',
+  'Oman',
+  'Palau',
+  'Palestine',
+  'Panama',
+  'Papua New Guinea',
+  'Paraguay',
+  'Peru',
+  'Philippines',
+  'Poland',
+  'Portugal',
+  'Romania',
+  'Russia',
+  'Rwanda',
+  'Saint Kitts and Nevis',
+  'Saint Lucia',
+  'Saint Vincent and the Grenadines',
+  'Samoa',
+  'San Marino',
+  'Sao Tome and Principe',
+  'Senegal',
+  'Serbia',
+  'Seychelles',
+  'Sierra Leone',
+  'Slovakia',
+  'Slovenia',
+  'Solomon Islands',
+  'Somalia',
+  'South Africa',
+  'South Sudan',
+  'Sri Lanka',
+  'Sudan',
+  'Suriname',
+  'Syria',
+  'Taiwan',
+  'Tajikistan',
+  'Tanzania',
+  'Thailand',
+  'Timor-Leste',
+  'Togo',
+  'Tonga',
+  'Trinidad and Tobago',
+  'Tunisia',
+  'Turkmenistan',
+  'Tuvalu',
+  'Uganda',
+  'Ukraine',
+  'Uruguay',
+  'Uzbekistan',
+  'Vanuatu',
+  'Vatican City',
+  'Venezuela',
+  'Vietnam',
+  'Yemen',
+  'Zambia',
+  'Zimbabwe'
+];
+
+// Alias for backwards compatibility across all components
+export const POPULAR_COUNTRIES = ALL_WORLD_COUNTRIES;
 
 export const POPULAR_CITIES = [
   'Any City / Flexible',
   'Karachi',
   'Lahore',
   'Islamabad',
+  'Rawalpindi',
+  'Peshawar',
   'London',
   'Oxford',
+  'Cambridge',
   'Manchester',
+  'Edinburgh',
   'Boston',
   'New York',
   'San Francisco / Bay Area',
-  'Pittsburgh',
+  'Los Angeles',
+  'Chicago',
+  'Austin',
   'Toronto',
   'Vancouver',
+  'Montreal',
+  'Waterloo',
   'Melbourne',
   'Sydney',
+  'Brisbane',
   'Munich',
   'Berlin',
+  'Heidelberg',
   'Dubai',
-  'Singapore'
+  'Abu Dhabi',
+  'Sharjah',
+  'Riyadh',
+  'Jeddah',
+  'Singapore',
+  'Tokyo',
+  'Kyoto',
+  'Seoul',
+  'Beijing',
+  'Shanghai',
+  'Paris',
+  'Rome',
+  'Milan',
+  'Madrid',
+  'Barcelona',
+  'Amsterdam',
+  'Zurich',
+  'Dublin',
+  'Kuala Lumpur',
+  'Istanbul',
+  'Doha'
 ] as const;
 
 export const CITIES_BY_COUNTRY: Record<string, string[]> = {
-  Pakistan: ['Karachi', 'Lahore', 'Islamabad', 'Peshawar', 'Rawalpindi', 'Faisalabad'],
-  'United States': ['Boston', 'New York', 'San Francisco / Bay Area', 'Pittsburgh', 'Austin', 'Chicago', 'Los Angeles'],
-  'United Kingdom': ['London', 'Oxford', 'Cambridge', 'Manchester', 'Edinburgh'],
-  Canada: ['Toronto', 'Vancouver', 'Montreal', 'Waterloo'],
-  Australia: ['Melbourne', 'Sydney', 'Brisbane'],
-  Germany: ['Munich', 'Berlin', 'Aachen', 'Heidelberg'],
-  'United Arab Emirates': ['Dubai', 'Abu Dhabi', 'Sharjah'],
-  Singapore: ['Singapore'],
-  Netherlands: ['Amsterdam', 'Delft', 'Eindhoven'],
+  Pakistan: [
+    'Any City / Flexible',
+    'Karachi',
+    'Lahore',
+    'Islamabad',
+    'Rawalpindi',
+    'Peshawar',
+    'Faisalabad',
+    'Multan',
+    'Quetta',
+    'Hyderabad',
+    'Gujranwala',
+    'Sialkot',
+    'Abbottabad',
+    'Bahawalpur',
+    'Sukkur',
+    'Gilgit'
+  ],
+  'United States': [
+    'Any City / Flexible',
+    'Boston',
+    'New York',
+    'San Francisco / Bay Area',
+    'Los Angeles',
+    'Chicago',
+    'Austin',
+    'Seattle',
+    'Pittsburgh',
+    'Philadelphia',
+    'Atlanta',
+    'San Diego',
+    'Washington D.C.',
+    'Houston',
+    'Dallas',
+    'Ann Arbor'
+  ],
+  'United Kingdom': [
+    'Any City / Flexible',
+    'London',
+    'Oxford',
+    'Cambridge',
+    'Manchester',
+    'Edinburgh',
+    'Birmingham',
+    'Bristol',
+    'Glasgow',
+    'Leeds',
+    'Sheffield',
+    'Nottingham',
+    'Warwick',
+    'Southampton'
+  ],
+  Canada: [
+    'Any City / Flexible',
+    'Toronto',
+    'Vancouver',
+    'Montreal',
+    'Waterloo',
+    'Ottawa',
+    'Calgary',
+    'Edmonton',
+    'Quebec City',
+    'Halifax',
+    'Victoria'
+  ],
+  Australia: [
+    'Any City / Flexible',
+    'Melbourne',
+    'Sydney',
+    'Brisbane',
+    'Canberra',
+    'Perth',
+    'Adelaide',
+    'Gold Coast',
+    'Hobart'
+  ],
+  Germany: [
+    'Any City / Flexible',
+    'Munich',
+    'Berlin',
+    'Heidelberg',
+    'Aachen',
+    'Frankfurt',
+    'Stuttgart',
+    'Hamburg',
+    'Freiburg',
+    'Tubingen',
+    'Bonn',
+    'Göttingen'
+  ],
+  'United Arab Emirates': [
+    'Any City / Flexible',
+    'Dubai',
+    'Abu Dhabi',
+    'Sharjah',
+    'Ajman',
+    'Ras Al Khaimah',
+    'Al Ain'
+  ],
+  'Saudi Arabia': [
+    'Any City / Flexible',
+    'Riyadh',
+    'Jeddah',
+    'Dhahran',
+    'Dammam',
+    'Mecca',
+    'Medina',
+    'Khobar'
+  ],
+  Singapore: ['Any City / Flexible', 'Singapore'],
+  Turkey: [
+    'Any City / Flexible',
+    'Istanbul',
+    'Ankara',
+    'Izmir',
+    'Bursa',
+    'Antalya',
+    'Eskisehir',
+    'Trabzon'
+  ],
+  Malaysia: [
+    'Any City / Flexible',
+    'Kuala Lumpur',
+    'Penang',
+    'Johor Bahru',
+    'Cyberjaya',
+    'Subang Jaya',
+    'Petaling Jaya'
+  ],
+  China: [
+    'Any City / Flexible',
+    'Beijing',
+    'Shanghai',
+    'Shenzhen',
+    'Hangzhou',
+    'Guangzhou',
+    'Wuhan',
+    'Nanjing',
+    'Chengdu',
+    'Xi\'an',
+    'Hong Kong'
+  ],
+  Japan: [
+    'Any City / Flexible',
+    'Tokyo',
+    'Kyoto',
+    'Osaka',
+    'Nagoya',
+    'Sendai',
+    'Fukuoka',
+    'Sapporo',
+    'Tsukuba',
+    'Kobe'
+  ],
+  'South Korea': [
+    'Any City / Flexible',
+    'Seoul',
+    'Busan',
+    'Daejeon',
+    'Incheon',
+    'Daegu',
+    'Gwangju',
+    'Suwon'
+  ],
+  France: [
+    'Any City / Flexible',
+    'Paris',
+    'Lyon',
+    'Toulouse',
+    'Marseille',
+    'Grenoble',
+    'Bordeaux',
+    'Strasbourg',
+    'Lille',
+    'Montpellier'
+  ],
+  Italy: [
+    'Any City / Flexible',
+    'Rome',
+    'Milan',
+    'Bologna',
+    'Florence',
+    'Turin',
+    'Venice',
+    'Naples',
+    'Pisa',
+    'Padua'
+  ],
+  Spain: [
+    'Any City / Flexible',
+    'Madrid',
+    'Barcelona',
+    'Valencia',
+    'Seville',
+    'Granada',
+    'Salamanca',
+    'Bilbao'
+  ],
+  Netherlands: [
+    'Any City / Flexible',
+    'Amsterdam',
+    'Delft',
+    'Rotterdam',
+    'Utrecht',
+    'Eindhoven',
+    'Leiden',
+    'Groningen',
+    'Maastricht'
+  ],
+  Switzerland: [
+    'Any City / Flexible',
+    'Zurich',
+    'Geneva',
+    'Lausanne',
+    'Basel',
+    'Bern',
+    'St. Gallen'
+  ],
+  Sweden: [
+    'Any City / Flexible',
+    'Stockholm',
+    'Lund',
+    'Gothenburg',
+    'Uppsala',
+    'Linköping'
+  ],
+  Ireland: [
+    'Any City / Flexible',
+    'Dublin',
+    'Cork',
+    'Galway',
+    'Limerick',
+    'Maynooth'
+  ],
+  'New Zealand': [
+    'Any City / Flexible',
+    'Auckland',
+    'Wellington',
+    'Christchurch',
+    'Dunedin',
+    'Hamilton'
+  ],
+  Qatar: ['Any City / Flexible', 'Doha', 'Education City'],
+  India: [
+    'Any City / Flexible',
+    'New Delhi',
+    'Mumbai',
+    'Bengaluru',
+    'Hyderabad',
+    'Chennai',
+    'Pune',
+    'Kolkata',
+    'Ahmedabad'
+  ],
+  Egypt: ['Any City / Flexible', 'Cairo', 'Alexandria', 'Giza'],
+  'South Africa': [
+    'Any City / Flexible',
+    'Cape Town',
+    'Johannesburg',
+    'Pretoria',
+    'Durban',
+    'Stellenbosch'
+  ],
+  Brazil: [
+    'Any City / Flexible',
+    'São Paulo',
+    'Rio de Janeiro',
+    'Brasília',
+    'Campinas',
+    'Belo Horizonte'
+  ],
+  Indonesia: [
+    'Any City / Flexible',
+    'Jakarta',
+    'Bandung',
+    'Yogyakarta',
+    'Surabaya',
+    'Depok'
+  ],
+  Russia: [
+    'Any City / Flexible',
+    'Moscow',
+    'Saint Petersburg',
+    'Novosibirsk',
+    'Kazan',
+    'Tomsk'
+  ],
+  Austria: [
+    'Any City / Flexible',
+    'Vienna',
+    'Graz',
+    'Innsbruck',
+    'Salzburg',
+    'Linz'
+  ],
+  Belgium: [
+    'Any City / Flexible',
+    'Brussels',
+    'Leuven',
+    'Ghent',
+    'Antwerp',
+    'Louvain-la-Neuve'
+  ],
+  Denmark: ['Any City / Flexible', 'Copenhagen', 'Aarhus', 'Odense', 'Aalborg'],
+  Norway: ['Any City / Flexible', 'Oslo', 'Bergen', 'Trondheim', 'Tromsø'],
+  Finland: ['Any City / Flexible', 'Helsinki', 'Espoo', 'Tampere', 'Turku', 'Oulu'],
+  Poland: ['Any City / Flexible', 'Warsaw', 'Krakow', 'Wroclaw', 'Poznan', 'Gdansk'],
+  Portugal: ['Any City / Flexible', 'Lisbon', 'Porto', 'Coimbra', 'Braga'],
+  Mexico: [
+    'Any City / Flexible',
+    'Mexico City',
+    'Monterrey',
+    'Guadalajara',
+    'Puebla'
+  ],
+  Argentina: ['Any City / Flexible', 'Buenos Aires', 'Cordoba', 'Rosario', 'La Plata'],
+  Chile: ['Any City / Flexible', 'Santiago', 'Valparaiso', 'Concepcion'],
+  Colombia: ['Any City / Flexible', 'Bogota', 'Medellin', 'Cali', 'Barranquilla'],
+  Philippines: ['Any City / Flexible', 'Manila', 'Quezon City', 'Cebu City'],
+  Thailand: ['Any City / Flexible', 'Bangkok', 'Chiang Mai', 'Phuket'],
+  Vietnam: ['Any City / Flexible', 'Hanoi', 'Ho Chi Minh City', 'Da Nang'],
+  Bangladesh: ['Any City / Flexible', 'Dhaka', 'Chittagong', 'Sylhet'],
+  'Sri Lanka': ['Any City / Flexible', 'Colombo', 'Kandy', 'Peradeniya'],
+  Nigeria: ['Any City / Flexible', 'Lagos', 'Abuja', 'Ibadan', 'Nsukka'],
+  Kenya: ['Any City / Flexible', 'Nairobi', 'Mombasa', 'Eldoret'],
+  Morocco: ['Any City / Flexible', 'Rabat', 'Casablanca', 'Marrakech', 'Fes'],
+  Jordan: ['Any City / Flexible', 'Amman', 'Irbid', 'Zarqa'],
+  Kuwait: ['Any City / Flexible', 'Kuwait City', 'Shuwaikh'],
+  Oman: ['Any City / Flexible', 'Muscat', 'Salalah', 'Sohar'],
+  Bahrain: ['Any City / Flexible', 'Manama', 'Sakhir'],
   'Anywhere / Global': [
     'Any City / Flexible',
     'Karachi',
     'Lahore',
     'Islamabad',
     'London',
-    'Toronto',
+    'Oxford',
+    'Cambridge',
+    'New York',
     'Boston',
+    'San Francisco / Bay Area',
+    'Toronto',
+    'Vancouver',
     'Melbourne',
+    'Sydney',
     'Munich',
+    'Berlin',
     'Dubai',
-    'Singapore'
+    'Riyadh',
+    'Singapore',
+    'Tokyo',
+    'Seoul',
+    'Paris',
+    'Zurich',
+    'Amsterdam'
   ]
 };
 
 export const getCitiesForCountry = (country?: string): string[] => {
-  if (!country || !CITIES_BY_COUNTRY[country]) {
+  if (!country || country === 'ALL' || country.includes('Anywhere')) {
     return CITIES_BY_COUNTRY['Anywhere / Global'];
   }
-  return CITIES_BY_COUNTRY[country];
+  if (CITIES_BY_COUNTRY[country]) {
+    return CITIES_BY_COUNTRY[country];
+  }
+  // Generic capital/main city placeholder for other world countries
+  return ['Any City / Flexible', `${country} Capital / Metro`, 'Main Campus Area'];
 };
 
+// Curated initial repository of premier universities across continents
 export const UNIVERSITY_PROGRAMS: UniversityProgram[] = [
   // --- PAKISTAN ---
   {
@@ -149,176 +707,137 @@ export const UNIVERSITY_PROGRAMS: UniversityProgram[] = [
   },
   {
     id: 'prog-pk-7',
-    universityName: 'COMSATS University Islamabad',
-    country: 'Pakistan',
-    city: 'Islamabad',
-    programTitle: 'B.S. in Bioinformatics & Computer Science',
-    degreeLevel: 'Bachelor',
-    calipsCodes: ['I', 'P', 'C'],
-    tuitionTier: '$',
-    description: 'Top-tier public science university specializing in genomic data analysis, bioinformatics tools, and applied computational research.',
-    keyMajors: ['Bioinformatics', 'Computer Science', 'Software Engineering', 'Mathematics'],
-    websiteUrl: 'https://www.comsats.edu.pk/'
-  },
-  {
-    id: 'prog-pk-8',
     universityName: 'Lahore University of Management Sciences (LUMS)',
     country: 'Pakistan',
     city: 'Lahore',
-    programTitle: 'B.Sc. (Honours) in Accounting & Finance / Economics',
+    programTitle: 'B.S. in Economics & Data Analytics / Management Science',
     degreeLevel: 'Bachelor',
-    calipsCodes: ['L', 'C', 'I'],
+    calipsCodes: ['C', 'L', 'I'],
     tuitionTier: '$$',
-    description: 'AACSB-accredited business school equipping future CFOs, investment analysts, and corporate leaders with deep financial acumen.',
-    keyMajors: ['Accounting & Finance', 'Management Science', 'Economics', 'Marketing'],
+    description: 'Top-tier research university renowned for financial modeling, behavioral economics, corporate strategy, and entrepreneurial incubators.',
+    keyMajors: ['Economics', 'Management Science', 'Accounting & Finance', 'Computer Science'],
     websiteUrl: 'https://lums.edu.pk/'
   },
   {
-    id: 'prog-pk-9',
-    universityName: 'National College of Arts (NCA)',
+    id: 'prog-pk-8',
+    universityName: 'GIKI Institute of Engineering Sciences and Technology',
     country: 'Pakistan',
-    city: 'Lahore',
-    programTitle: 'Bachelor of Design & Visual Arts / Architecture',
+    city: 'Topi / Swabi',
+    programTitle: 'B.S. in Computer Engineering & Autonomous Robotics',
     degreeLevel: 'Bachelor',
-    calipsCodes: ['A', 'P', 'I'],
-    tuitionTier: '$',
-    description: 'Celebrated national arts academy nurturing fine artists, film directors, interior architects, and graphic design visionaries.',
-    keyMajors: ['Visual Communication Design', 'Fine Arts', 'Architecture', 'Film & Television'],
-    websiteUrl: 'https://www.nca.edu.pk/'
+    calipsCodes: ['P', 'I', 'C'],
+    tuitionTier: '$$',
+    description: 'Prestigious residential engineering institute focused on hardware-software co-design, embedded robotics, and aerospace concepts.',
+    keyMajors: ['Computer Engineering', 'Robotics', 'Materials Engineering', 'Electrical Engineering'],
+    websiteUrl: 'https://giki.edu.pk/'
   },
 
   // --- UNITED KINGDOM ---
   {
     id: 'prog-uk-1',
-    universityName: 'Imperial College London',
-    country: 'United Kingdom',
-    city: 'London',
-    programTitle: 'BEng / MEng in Biomedical Engineering & Mechatronics',
-    degreeLevel: 'Bachelor',
-    calipsCodes: ['I', 'P', 'C'],
-    tuitionTier: '$$$',
-    description: 'Applied engineering combining biology, electronics, and precision mechanics for medical devices, robotic prosthetics, and healthcare sensors.',
-    keyMajors: ['Biomedical Engineering', 'Mechatronics', 'Bioinformatics', 'Applied Mechanics'],
-    websiteUrl: 'https://www.imperial.ac.uk/'
-  },
-  {
-    id: 'prog-uk-2',
-    universityName: 'London School of Economics (LSE)',
-    country: 'United Kingdom',
-    city: 'London',
-    programTitle: 'B.Sc. in Actuarial Science & Risk Analytics',
-    degreeLevel: 'Bachelor',
-    calipsCodes: ['C', 'I', 'L'],
-    tuitionTier: '$$$',
-    description: 'Elite quantitative curriculum in statistical modeling, compliance assessment, financial risk management, and insurance economics.',
-    keyMajors: ['Actuarial Science', 'Statistics', 'Finance', 'Compliance & Risk Analytics'],
-    websiteUrl: 'https://www.lse.ac.uk/'
-  },
-  {
-    id: 'prog-uk-3',
-    universityName: 'University of the Arts London (Central Saint Martins)',
-    country: 'United Kingdom',
-    city: 'London',
-    programTitle: 'B.A. (Hons) in Graphic Communication & UX Design',
-    degreeLevel: 'Bachelor',
-    calipsCodes: ['A', 'L', 'P'],
-    tuitionTier: '$$$',
-    description: 'World benchmark for creative direction, interactive branding, editorial typography, and high-impact digital multimedia design.',
-    keyMajors: ['Graphic Design', 'UX/UI Design', 'Creative Direction', 'Digital Storytelling'],
-    websiteUrl: 'https://www.arts.ac.uk/'
-  },
-  {
-    id: 'prog-uk-4',
     universityName: 'University of Oxford',
     country: 'United Kingdom',
     city: 'Oxford',
-    programTitle: 'B.A. in Philosophy, Politics and Economics (PPE)',
+    programTitle: 'BA in Philosophy, Politics and Economics (PPE) & Law',
     degreeLevel: 'Bachelor',
-    calipsCodes: ['L', 'S', 'I'],
-    tuitionTier: '$$$',
-    description: 'Prestigious program producing world leaders, public policy strategists, diplomat negotiators, and international policy analysts.',
-    keyMajors: ['Political Science', 'Economics', 'Philosophy', 'Public Policy'],
+    calipsCodes: ['L', 'I', 'S'],
+    tuitionTier: '$$$$',
+    description: 'One of the world\'s oldest academic institutions, renowned for producing global prime ministers, international diplomats, and legal thinkers.',
+    keyMajors: ['PPE', 'Jurisprudence (Law)', 'Modern History', 'Computer Science & Philosophy'],
     websiteUrl: 'https://www.ox.ac.uk/'
   },
   {
-    id: 'prog-uk-5',
-    universityName: 'University of Manchester',
+    id: 'prog-uk-2',
+    universityName: 'University of Cambridge',
     country: 'United Kingdom',
-    city: 'Manchester',
-    programTitle: 'B.Sc. in Computer Systems & Software Engineering',
+    city: 'Cambridge',
+    programTitle: 'Computer Science Tripos & Natural Sciences',
     degreeLevel: 'Bachelor',
     calipsCodes: ['I', 'P', 'C'],
-    tuitionTier: '$$$',
-    description: 'Historic birthplace of modern computing, offering industry-integrated coursework in cloud infrastructure, embedded microchips, and software dev.',
-    keyMajors: ['Computer Systems', 'Software Engineering', 'Robotics', 'Artificial Intelligence'],
-    websiteUrl: 'https://www.manchester.ac.uk/'
+    tuitionTier: '$$$$',
+    description: 'Iconic research university leading the world in artificial intelligence discoveries, quantum computing, biotechnology, and mathematics.',
+    keyMajors: ['Computer Science', 'Natural Sciences', 'Mathematics', 'Engineering'],
+    websiteUrl: 'https://www.cam.ac.uk/'
+  },
+  {
+    id: 'prog-uk-3',
+    universityName: 'Imperial College London',
+    country: 'United Kingdom',
+    city: 'London',
+    programTitle: 'BEng in Computing & Biomedical Engineering',
+    degreeLevel: 'Bachelor',
+    calipsCodes: ['I', 'P', 'C'],
+    tuitionTier: '$$$$',
+    description: 'Global STEM powerhouse immersed in the heart of London, driving fintech innovations, medical robotics, and renewable aerospace technology.',
+    keyMajors: ['Computing', 'Biomedical Engineering', 'Data Science', 'Electrical Engineering'],
+    websiteUrl: 'https://www.imperial.ac.uk/'
+  },
+  {
+    id: 'prog-uk-4',
+    universityName: 'London School of Economics (LSE)',
+    country: 'United Kingdom',
+    city: 'London',
+    programTitle: 'BSc in Economics, Finance & Global Public Policy',
+    degreeLevel: 'Bachelor',
+    calipsCodes: ['C', 'L', 'I'],
+    tuitionTier: '$$$$',
+    description: 'World-leading specialist social science university training financial economists, central bankers, policy analysts, and multilateral negotiators.',
+    keyMajors: ['Economics', 'Finance', 'International Relations', 'Politics & Policy'],
+    websiteUrl: 'https://www.lse.ac.uk/'
   },
 
   // --- UNITED STATES ---
   {
     id: 'prog-us-1',
-    universityName: 'Carnegie Mellon University',
+    universityName: 'Massachusetts Institute of Technology (MIT)',
     country: 'United States',
-    city: 'Pittsburgh',
-    programTitle: 'B.S. in Computer Science & Human-Computer Interaction',
+    city: 'Boston',
+    programTitle: 'B.S. in Electrical Engineering & Computer Science (6-3)',
     degreeLevel: 'Bachelor',
-    calipsCodes: ['I', 'A', 'C'],
+    calipsCodes: ['I', 'P', 'C'],
     tuitionTier: '$$$$',
-    description: 'Premier interdisciplinary program marrying rigorous computational algorithms with user-centered interaction design and product architectures.',
-    keyMajors: ['Computer Science', 'Human-Computer Interaction', 'Artificial Intelligence', 'Software Engineering'],
-    websiteUrl: 'https://csd.cmu.edu/'
+    description: 'Unmatched global epicenter of frontier computing, generative models, robotics fabrication, and astronautical systems engineering.',
+    keyMajors: ['Computer Science', 'Artificial Intelligence', 'Mechanical Engineering', 'Mathematics'],
+    websiteUrl: 'https://www.mit.edu/'
   },
   {
     id: 'prog-us-2',
     universityName: 'Stanford University',
     country: 'United States',
     city: 'San Francisco / Bay Area',
-    programTitle: 'B.S. in Management Science & Engineering (MS&E)',
+    programTitle: 'B.S. in Symbolic Systems, Product Design & CS',
     degreeLevel: 'Bachelor',
-    calipsCodes: ['L', 'I', 'C'],
+    calipsCodes: ['A', 'I', 'L'],
     tuitionTier: '$$$$',
-    description: 'Prepares founders and strategists to solve complex business and tech challenges through quantitative modeling, economics, and leadership.',
-    keyMajors: ['Management Science', 'Finance & Economics', 'Entrepreneurship', 'Operations Research'],
-    websiteUrl: 'https://msande.stanford.edu/'
+    description: 'Heart of Silicon Valley entrepreneurship, blending human-computer interaction, venture creation, AI ethics, and industrial design.',
+    keyMajors: ['Symbolic Systems', 'Computer Science', 'Product Design', 'Management Science & Engineering'],
+    websiteUrl: 'https://www.stanford.edu/'
   },
   {
     id: 'prog-us-3',
-    universityName: 'Northeastern University',
+    universityName: 'Harvard University',
     country: 'United States',
     city: 'Boston',
-    programTitle: 'B.S. in Data Science & Business Administration (Co-op)',
+    programTitle: 'A.B. in Applied Mathematics & Government / Economics',
     degreeLevel: 'Bachelor',
-    calipsCodes: ['C', 'I', 'L'],
+    calipsCodes: ['L', 'C', 'S'],
     tuitionTier: '$$$$',
-    description: 'World-renowned co-op program pairing real enterprise tech employment with machine learning, financial forecasting, and database engineering.',
-    keyMajors: ['Data Science', 'Business Analytics', 'Finance', 'Supply Chain Management'],
-    websiteUrl: 'https://www.northeastern.edu/'
+    description: 'Prestigious Ivy League institution fostering world leaders, institutional directors, macroeconomic researchers, and civic innovators.',
+    keyMajors: ['Applied Mathematics', 'Economics', 'Government', 'Social Studies'],
+    websiteUrl: 'https://www.harvard.edu/'
   },
   {
     id: 'prog-us-4',
-    universityName: 'New York University (NYU Stern & Tisch)',
-    country: 'United States',
-    city: 'New York',
-    programTitle: 'B.S. in Interactive Media Arts & Digital Business',
-    degreeLevel: 'Bachelor',
-    calipsCodes: ['A', 'L', 'I'],
-    tuitionTier: '$$$$',
-    description: 'At the vibrant crossroads of Manhattan tech venture capital and world-class digital arts, creative coding, and marketing.',
-    keyMajors: ['Interactive Media', 'Digital Marketing', 'Creative Technology', 'Entrepreneurship'],
-    websiteUrl: 'https://www.nyu.edu/'
-  },
-  {
-    id: 'prog-us-5',
     universityName: 'University of California, Berkeley',
     country: 'United States',
     city: 'San Francisco / Bay Area',
-    programTitle: 'B.S. in Environmental Science, Policy & Clean Energy',
+    programTitle: 'B.A. / B.S. in EECS & Data Science',
     degreeLevel: 'Bachelor',
-    calipsCodes: ['I', 'P', 'S'],
-    tuitionTier: '$$$$',
-    description: 'Interdisciplinary science and ecological policy program training researchers, environmental conservationists, and green policy leaders.',
-    keyMajors: ['Environmental Science', 'Agricultural Science', 'Public Policy', 'Conservation Biology'],
-    websiteUrl: 'https://nature.berkeley.edu/'
+    calipsCodes: ['I', 'C', 'P'],
+    tuitionTier: '$$$',
+    description: 'Premier public research university famed for open-source AI frameworks, distributed systems, and cutting-edge software architecture.',
+    keyMajors: ['EECS', 'Data Science', 'Cognitive Science', 'Business Administration'],
+    websiteUrl: 'https://www.berkeley.edu/'
   },
 
   // --- CANADA ---
@@ -327,39 +846,26 @@ export const UNIVERSITY_PROGRAMS: UniversityProgram[] = [
     universityName: 'University of Toronto',
     country: 'Canada',
     city: 'Toronto',
-    programTitle: 'B.A. in Digital Enterprise Management & Communications',
+    programTitle: 'B.Sc. in Computer Science & Artificial Intelligence (Rotman)',
     degreeLevel: 'Bachelor',
-    calipsCodes: ['L', 'A', 'C'],
+    calipsCodes: ['I', 'C', 'L'],
     tuitionTier: '$$$',
-    description: 'Integrates digital media production, corporate communications, product management, and modern media business models in downtown Toronto.',
-    keyMajors: ['Communications', 'Digital Media', 'Marketing', 'Business Analytics'],
+    description: 'Top Canadian university celebrated as the birthplace of deep learning, offering world-class co-op opportunities across tech and finance.',
+    keyMajors: ['Computer Science', 'Commerce (Rotman)', 'Statistics', 'Software Engineering'],
     websiteUrl: 'https://www.utoronto.ca/'
   },
   {
     id: 'prog-ca-2',
     universityName: 'University of Waterloo',
     country: 'Canada',
-    city: 'Toronto',
-    programTitle: 'B.Math in Computer Science & Applied Mathematics (Co-op)',
+    city: 'Waterloo',
+    programTitle: 'B.Math / B.S. in Software Engineering & Co-op',
     degreeLevel: 'Bachelor',
-    calipsCodes: ['I', 'C', 'P'],
+    calipsCodes: ['P', 'I', 'C'],
     tuitionTier: '$$$',
-    description: 'Silicon Valley North tech magnet with unmatched paid internships in algorithmic programming, cybersecurity, and financial tech.',
-    keyMajors: ['Computer Science', 'Applied Mathematics', 'Software Engineering', 'Data Analytics'],
+    description: 'World-famous for its premier co-op internship program with Silicon Valley tech giants, high-frequency trading firms, and startups.',
+    keyMajors: ['Software Engineering', 'Computer Science', 'Mathematics', 'Mechatronics'],
     websiteUrl: 'https://uwaterloo.ca/'
-  },
-  {
-    id: 'prog-ca-3',
-    universityName: 'University of British Columbia (UBC)',
-    country: 'Canada',
-    city: 'Vancouver',
-    programTitle: 'B.Sc. in Psychology & Cognitive Neuroscience',
-    degreeLevel: 'Bachelor',
-    calipsCodes: ['S', 'I', 'A'],
-    tuitionTier: '$$$',
-    description: 'Cutting-edge empirical exploration of neural mechanisms, empathetic human behavior, mental health therapies, and counseling techniques.',
-    keyMajors: ['Psychology', 'Cognitive Systems', 'Mental Health Counseling', 'Behavioral Science'],
-    websiteUrl: 'https://www.ubc.ca/'
   },
 
   // --- AUSTRALIA ---
@@ -368,12 +874,12 @@ export const UNIVERSITY_PROGRAMS: UniversityProgram[] = [
     universityName: 'University of Melbourne',
     country: 'Australia',
     city: 'Melbourne',
-    programTitle: 'Bachelor of Design & Architectural Engineering',
+    programTitle: 'Bachelor of Science (Computing & Data) / Commerce',
     degreeLevel: 'Bachelor',
-    calipsCodes: ['A', 'P', 'I'],
+    calipsCodes: ['I', 'L', 'S'],
     tuitionTier: '$$$',
-    description: 'Leading Asia-Pacific studio curriculum in sustainable architecture, computational urban design, and tangible building construction.',
-    keyMajors: ['Architecture', 'Urban Planning', 'Industrial Design', 'Construction Management'],
+    description: 'Australia\'s leading research university with the flexible Melbourne Model, offering multidisciplinary problem solving and global internships.',
+    keyMajors: ['Computing & Software Systems', 'Data Science', 'Finance', 'Biomedicine'],
     websiteUrl: 'https://www.unimelb.edu.au/'
   },
   {
@@ -381,12 +887,12 @@ export const UNIVERSITY_PROGRAMS: UniversityProgram[] = [
     universityName: 'University of Sydney',
     country: 'Australia',
     city: 'Sydney',
-    programTitle: 'Bachelor of Commerce & International Business',
+    programTitle: 'Bachelor of Advanced Computing & Design Architecture',
     degreeLevel: 'Bachelor',
-    calipsCodes: ['L', 'C', 'S'],
+    calipsCodes: ['I', 'A', 'P'],
     tuitionTier: '$$$',
-    description: 'Top global business program training students in cross-border trade, startup leadership, human capital management, and brand strategy.',
-    keyMajors: ['International Business', 'Marketing', 'Commercial Law', 'Human Resources'],
+    description: 'Prestigious sandstone campus combining deep technical rigor in cyber systems with creative architectural computing and entrepreneurship.',
+    keyMajors: ['Advanced Computing', 'Software Development', 'Design Computing', 'Cybersecurity'],
     websiteUrl: 'https://www.sydney.edu.au/'
   },
 
@@ -396,94 +902,194 @@ export const UNIVERSITY_PROGRAMS: UniversityProgram[] = [
     universityName: 'Technical University of Munich (TUM)',
     country: 'Germany',
     city: 'Munich',
-    programTitle: 'B.Sc. in Robotics, Mechatronics & Artificial Intelligence',
+    programTitle: 'B.Sc. in Informatics & Automotive Software Engineering',
     degreeLevel: 'Bachelor',
     calipsCodes: ['P', 'I', 'C'],
     tuitionTier: '$',
-    description: 'Germany’s top technical university offering tuition-free or ultra-low cost high-tech engineering, industrial automation, and robotic AI labs.',
-    keyMajors: ['Robotics', 'Mechatronics', 'Electrical Engineering', 'Computer Science'],
+    description: 'Germany\'s top technical university, deeply partnered with BMW, Siemens, and high-tech manufacturing giants. Minimal tuition fees.',
+    keyMajors: ['Informatics', 'Mechanical Engineering', 'Robotics', 'Electrical Engineering'],
     websiteUrl: 'https://www.tum.de/'
   },
   {
     id: 'prog-de-2',
-    universityName: 'Free University of Berlin (Freie Universität)',
+    universityName: 'Heidelberg University',
     country: 'Germany',
-    city: 'Berlin',
-    programTitle: 'B.A. in Social Sciences, Public Policy & Communication',
+    city: 'Heidelberg',
+    programTitle: 'B.Sc. in Molecular Biotechnology & Medical Sciences',
     degreeLevel: 'Bachelor',
-    calipsCodes: ['S', 'L', 'I'],
+    calipsCodes: ['I', 'S', 'P'],
     tuitionTier: '$',
-    description: 'Vibrant European center for public policy reform, NGO diplomacy, societal welfare research, and multicultural communications.',
-    keyMajors: ['Public Policy', 'Sociology', 'Political Science', 'International Relations'],
-    websiteUrl: 'https://www.fu-berlin.de/'
+    description: 'Germany\'s oldest university, a world authority in life sciences, oncology research, genomics, and pharmaceutical chemistry.',
+    keyMajors: ['Biotechnology', 'Medicine', 'Biosciences', 'Physics'],
+    websiteUrl: 'https://www.uni-heidelberg.de/'
   },
 
-  // --- UAE & MIDDLE EAST ---
+  // --- UNITED ARAB EMIRATES ---
   {
     id: 'prog-ae-1',
     universityName: 'American University of Sharjah (AUS)',
     country: 'United Arab Emirates',
-    city: 'Dubai',
-    programTitle: 'B.S. in Computer Engineering & Industrial Logistics',
+    city: 'Sharjah',
+    programTitle: 'B.S. in Computer Engineering & Digital Media Design',
+    degreeLevel: 'Bachelor',
+    calipsCodes: ['P', 'A', 'I'],
+    tuitionTier: '$$$',
+    description: 'Premier accredited American-style institution in the Gulf region, renowned for design studios, smart city engineering, and tech ventures.',
+    keyMajors: ['Computer Engineering', 'Visual Communication', 'Civil Engineering', 'Finance'],
+    websiteUrl: 'https://www.aus.edu/'
+  },
+  {
+    id: 'prog-ae-2',
+    universityName: 'Khalifa University',
+    country: 'United Arab Emirates',
+    city: 'Abu Dhabi',
+    programTitle: 'B.Sc. in Artificial Intelligence & Aerospace Systems',
     degreeLevel: 'Bachelor',
     calipsCodes: ['I', 'P', 'C'],
     tuitionTier: '$$$',
-    description: 'ABET-accredited regional powerhouse preparing engineers for smart cities, drone transport logistics, and clean tech infrastructure.',
-    keyMajors: ['Computer Engineering', 'Industrial Engineering', 'Logistics & Supply Chain', 'Mechatronics'],
-    websiteUrl: 'https://www.aus.edu/'
+    description: 'High-ranking science and technology university driving UAE clean energy, space missions, nuclear sciences, and robotics.',
+    keyMajors: ['Artificial Intelligence', 'Aerospace Engineering', 'Biomedical Engineering', 'Renewable Energy'],
+    websiteUrl: 'https://www.ku.ac.ae/'
   },
 
-  // --- SINGAPORE & NETHERLANDS ---
+  // --- SINGAPORE ---
   {
     id: 'prog-sg-1',
     universityName: 'National University of Singapore (NUS)',
     country: 'Singapore',
     city: 'Singapore',
-    programTitle: 'B.Soc.Sci in Psychology & Behavioral Science',
+    programTitle: 'Bachelor of Computing (Computer Science) & Business Analytics',
     degreeLevel: 'Bachelor',
-    calipsCodes: ['S', 'I', 'A'],
+    calipsCodes: ['I', 'C', 'L'],
     tuitionTier: '$$$',
-    description: 'Top Asian research department exploring human cognition, counseling psychology, behavioral economics, and clinical mental wellness.',
-    keyMajors: ['Psychology', 'Counseling & Mental Health', 'Behavioral Science', 'Human Resources'],
+    description: 'Consistently ranked #1 in Asia for computer science, fintech ecosystems, artificial intelligence, and logistics engineering.',
+    keyMajors: ['Computer Science', 'Business Analytics', 'Information Systems', 'Quantitative Finance'],
     websiteUrl: 'https://www.nus.edu.sg/'
   },
   {
-    id: 'prog-nl-1',
-    universityName: 'Delft University of Technology (TU Delft)',
-    country: 'Netherlands',
-    city: 'Delft',
-    programTitle: 'B.Sc. in Sustainable Energy Technology & Mechanical Engineering',
+    id: 'prog-sg-2',
+    universityName: 'Nanyang Technological University (NTU)',
+    country: 'Singapore',
+    city: 'Singapore',
+    programTitle: 'B.Eng. in Smart Materials, Robotics & AI Systems',
     degreeLevel: 'Bachelor',
-    calipsCodes: ['P', 'I', 'L'],
+    calipsCodes: ['P', 'I', 'C'],
+    tuitionTier: '$$$',
+    description: 'Eco-campus powerhouse leading global research in autonomous mobility, smart materials, semiconductor fabrication, and clean tech.',
+    keyMajors: ['Data Science & AI', 'Mechanical Engineering', 'Materials Science', 'Communication Studies'],
+    websiteUrl: 'https://www.ntu.edu.sg/'
+  },
+
+  // --- JAPAN ---
+  {
+    id: 'prog-jp-1',
+    universityName: 'The University of Tokyo (Todai)',
+    country: 'Japan',
+    city: 'Tokyo',
+    programTitle: 'PEAK Program in Global Environmental & Information Sciences',
+    degreeLevel: 'Bachelor',
+    calipsCodes: ['I', 'P', 'S'],
     tuitionTier: '$$',
-    description: 'Hands-on European engineering powerhouse specializing in renewable grids, robotic hardware, wind/solar systems, and automated logistics.',
-    keyMajors: ['Mechanical Engineering', 'Renewable Energy Technology', 'Robotics & Mechatronics', 'Electrical Engineering'],
-    websiteUrl: 'https://www.tudelft.nl/'
+    description: 'Japan\'s foremost imperial university offering premier English-taught degrees in frontier physics, autonomous robotics, and environmental stewardship.',
+    keyMajors: ['Information Science', 'Mechanical Engineering', 'Environmental Studies', 'Physics'],
+    websiteUrl: 'https://www.u-tokyo.ac.jp/en/'
+  },
+  {
+    id: 'prog-jp-2',
+    universityName: 'Kyoto University',
+    country: 'Japan',
+    city: 'Kyoto',
+    programTitle: 'International Undergraduate Program in Civil & Chemical Engineering',
+    degreeLevel: 'Bachelor',
+    calipsCodes: ['I', 'P', 'A'],
+    tuitionTier: '$$',
+    description: 'Famous for producing numerous Nobel laureates in fundamental physics, chemistry, and revolutionary stem cell discoveries.',
+    keyMajors: ['Engineering Sciences', 'Fundamental Physics', 'Chemical Biology', 'Architecture'],
+    websiteUrl: 'https://www.kyoto-u.ac.jp/en/'
+  },
+
+  // --- CHINA ---
+  {
+    id: 'prog-cn-1',
+    universityName: 'Tsinghua University',
+    country: 'China',
+    city: 'Beijing',
+    programTitle: 'B.S. in Computer Science & Artificial Intelligence (Yao Class)',
+    degreeLevel: 'Bachelor',
+    calipsCodes: ['I', 'C', 'P'],
+    tuitionTier: '$',
+    description: 'Renowned worldwide for producing premier computer scientists, algorithmic olympiad champions, and pioneering quantum hardware engineers.',
+    keyMajors: ['Computer Science', 'Electronic Engineering', 'Automation', 'Applied Mathematics'],
+    websiteUrl: 'https://www.tsinghua.edu.cn/en/'
+  },
+
+  // --- SWITZERLAND ---
+  {
+    id: 'prog-ch-1',
+    universityName: 'ETH Zurich (Swiss Federal Institute of Technology)',
+    country: 'Switzerland',
+    city: 'Zurich',
+    programTitle: 'B.Sc. in Computer Science & Robotics Fabrication',
+    degreeLevel: 'Bachelor',
+    calipsCodes: ['I', 'P', 'C'],
+    tuitionTier: '$',
+    description: 'Einstein\'s alma mater and Europe\'s top technical university, leading the world in computer vision, robotics, and particle physics.',
+    keyMajors: ['Computer Science', 'Mechanical Engineering', 'Physics', 'Electrical Engineering'],
+    websiteUrl: 'https://ethz.ch/en.html'
   }
 ];
 
+// Helper to save universities found via Google search to local memory
+const LOCAL_STORAGE_KEY_CUSTOM_UNIS = 'pathcode_custom_saved_unis';
+
+export function getStoredLiveUniversities(): UniversityProgram[] {
+  const data = localStorage.getItem(LOCAL_STORAGE_KEY_CUSTOM_UNIS);
+  if (!data) return [];
+  try {
+    return JSON.parse(data);
+  } catch {
+    return [];
+  }
+}
+
+export function saveLiveUniversityProgram(program: UniversityProgram): void {
+  const list = getStoredLiveUniversities();
+  const exists = list.some((p) => p.id === program.id);
+  if (!exists) {
+    list.unshift(program);
+    localStorage.setItem(LOCAL_STORAGE_KEY_CUSTOM_UNIS, JSON.stringify(list));
+  }
+}
+
+export function getAllUniversityPrograms(): UniversityProgram[] {
+  const live = getStoredLiveUniversities();
+  const staticIds = new Set(UNIVERSITY_PROGRAMS.map((p) => p.id));
+  const newLive = live.filter((p) => !staticIds.has(p.id));
+  return [...newLive, ...UNIVERSITY_PROGRAMS];
+}
+
 export function filterUniversitiesByLocation(
   programs: UniversityProgram[],
-  preferredCountry?: string,
-  preferredCity?: string
+  country?: string,
+  city?: string
 ): UniversityProgram[] {
-  if (!preferredCountry && !preferredCity) return programs;
-  
-  const isGlobalCountry = !preferredCountry || preferredCountry.includes('Anywhere') || preferredCountry === 'ALL';
-  const isGlobalCity = !preferredCity || preferredCity.includes('Any City') || preferredCity === 'ALL';
+  if (!programs || programs.length === 0) return [];
+  const cleanCountry = country?.trim();
+  const cleanCity = city?.trim();
 
-  if (isGlobalCountry && isGlobalCity) return programs;
+  return programs.filter((prog) => {
+    const matchCountry =
+      !cleanCountry ||
+      cleanCountry === 'ALL' ||
+      cleanCountry.includes('Anywhere') ||
+      prog.country.toLowerCase() === cleanCountry.toLowerCase();
 
-  return programs.filter((p) => {
-    let matchCountry = true;
-    let matchCity = true;
-
-    if (!isGlobalCountry) {
-      matchCountry = p.country.toLowerCase() === preferredCountry.toLowerCase();
-    }
-    if (!isGlobalCity && preferredCity) {
-      matchCity = p.city.toLowerCase().includes(preferredCity.toLowerCase()) || preferredCity.toLowerCase().includes(p.city.toLowerCase());
-    }
+    const matchCity =
+      !cleanCity ||
+      cleanCity === 'ALL' ||
+      cleanCity.includes('Any City') ||
+      prog.city.toLowerCase().includes(cleanCity.toLowerCase()) ||
+      cleanCity.toLowerCase().includes(prog.city.toLowerCase());
 
     return matchCountry && matchCity;
   });

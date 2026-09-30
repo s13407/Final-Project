@@ -72,6 +72,8 @@ export interface UniversityProgram {
   description: string;
   keyMajors: string[];
   websiteUrl: string;
+  isLiveGoogleResult?: boolean;
+  sourceAttribution?: string;
 }
 
 export interface DirectInterestMatch {
