@@ -80,6 +80,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
       if (savedEmail) {
         setLoginEmail(savedEmail);
+        setEmail(savedEmail);
         setMode('login');
       } else {
         setMode('signup');
@@ -147,12 +148,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     e.preventDefault();
     setError(null);
 
-    if (!email || !name || !school) {
-      setError('Please fill in your name, email, and school/college.');
+    const cleanEmail = email.trim();
+    const cleanName = name.trim();
+    const cleanSchool = school.trim() || 'Commecs College';
+
+    if (!cleanEmail || !cleanName) {
+      setError('Please provide your name and student email address.');
       return;
     }
 
-    const uniquePass = generatedPassword || generateUniquePassword();
+    const uniquePass = (generatedPassword || generateUniquePassword()).trim();
     if (uniquePass.length < 6) {
       setError('Password must be at least 6 characters.');
       return;
@@ -162,11 +167,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
     try {
       const res = await signUpStudent({
-        email: email.trim(),
+        email: cleanEmail,
         password: uniquePass,
-        name: name.trim(),
+        name: cleanName,
         age: Number(age) || 18,
-        school: school.trim(),
+        school: cleanSchool,
         department: department || DEPARTMENTS[0],
         preferredCountry: preferredCountry || 'Pakistan',
         preferredCity: preferredCity || 'Karachi'
@@ -178,7 +183,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         return;
       }
 
-      setLastEmail(email.trim());
+      setLastEmail(cleanEmail);
       setRegisteredSuccessUser(res.profile);
     } catch (err: any) {
       setError(err?.message || 'Registration failed. Please check your connection.');

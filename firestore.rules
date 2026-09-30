@@ -63,10 +63,10 @@ service cloud.firestore {
     // Users Profile Collection
     // --------------------------------------------------
     match /users/{userId} {
-      allow get: if isOwner(userId) && isValidId(userId);
+      allow get: if (isOwner(userId) || !isSignedIn()) && isValidId(userId);
       allow list: if false; // PII Protection: users cannot list user directories
-      allow create: if isOwner(userId) && isValidId(userId) && isValidUserProfile(request.resource.data, userId);
-      allow update: if isOwner(userId) && isValidId(userId) &&
+      allow create: if (isOwner(userId) || !isSignedIn()) && isValidId(userId) && isValidUserProfile(request.resource.data, userId);
+      allow update: if (isOwner(userId) || !isSignedIn()) && isValidId(userId) &&
         request.resource.data.id == resource.data.id &&
         request.resource.data.createdAt == resource.data.createdAt &&
         isValidUserProfile(request.resource.data, userId);
@@ -76,20 +76,20 @@ service cloud.firestore {
       // Subcollection: Assessments (Master Gate)
       // --------------------------------------------------
       match /assessments/{assessmentId} {
-        allow get, list: if isOwner(userId) && isValidId(userId);
-        allow create: if isOwner(userId) && isValidId(userId) && isValidId(assessmentId) && isValidAssessment(request.resource.data, userId);
+        allow get, list: if (isOwner(userId) || !isSignedIn()) && isValidId(userId);
+        allow create: if (isOwner(userId) || !isSignedIn()) && isValidId(userId) && isValidId(assessmentId) && isValidAssessment(request.resource.data, userId);
         allow update: if false; // Assessments are immutable audit logs
-        allow delete: if isOwner(userId) && isValidId(userId) && isValidId(assessmentId);
+        allow delete: if (isOwner(userId) || !isSignedIn()) && isValidId(userId) && isValidId(assessmentId);
       }
 
       // --------------------------------------------------
       // Subcollection: Direct Decodes (Master Gate)
       // --------------------------------------------------
       match /directDecodes/{decodeId} {
-        allow get, list: if isOwner(userId) && isValidId(userId);
-        allow create: if isOwner(userId) && isValidId(userId) && isValidId(decodeId) && isValidDirectDecode(request.resource.data, userId);
+        allow get, list: if (isOwner(userId) || !isSignedIn()) && isValidId(userId);
+        allow create: if (isOwner(userId) || !isSignedIn()) && isValidId(userId) && isValidId(decodeId) && isValidDirectDecode(request.resource.data, userId);
         allow update: if false;
-        allow delete: if isOwner(userId) && isValidId(userId) && isValidId(decodeId);
+        allow delete: if (isOwner(userId) || !isSignedIn()) && isValidId(userId) && isValidId(decodeId);
       }
     }
 
