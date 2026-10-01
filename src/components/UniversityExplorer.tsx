@@ -341,24 +341,24 @@ function adaptProgramToMajor(prog: UniversityProgram, major: string): University
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8 animate-fadeIn">
       {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 p-8 sm:p-10 shadow-2xl text-white">
+      <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 p-5 sm:p-8 md:p-10 shadow-2xl text-white">
         <div className="relative z-10 max-w-3xl space-y-3">
-          <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3.5 py-1 text-xs font-bold uppercase tracking-wider backdrop-blur-sm text-white">
-            <Globe className="h-4 w-4" />
+          <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 sm:px-3.5 py-1 text-[11px] sm:text-xs font-bold uppercase tracking-wider backdrop-blur-sm text-white">
+            <Globe className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span>Global Academic Explorer • All Countries & Cities</span>
           </div>
-          <h1 className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight">
+          <h1 className="font-display text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">
             Universities & Degree Programs
           </h1>
-          <p className="text-sm sm:text-base text-purple-100 leading-relaxed max-w-2xl">
+          <p className="text-xs sm:text-base text-purple-100 leading-relaxed max-w-2xl">
             Explore authentic universities from all countries and cities across the globe. Use live Google search integration to retrieve real-time authenticated university data, official portals, and CALIPS vocational alignments.
           </p>
 
-          <div className="pt-2 flex flex-wrap items-center gap-3">
+          <div className="pt-2 flex flex-wrap items-center gap-2.5 sm:gap-3">
             <button
-              onClick={handleLiveGoogleSearch}
+              onClick={() => handleLiveGoogleSearch()}
               disabled={isSearchingGoogle}
-              className="inline-flex items-center gap-2 rounded-2xl bg-white text-indigo-900 font-extrabold text-xs px-5 py-2.5 shadow-lg hover:bg-slate-100 transition-all active:scale-95 disabled:opacity-75"
+              className="inline-flex items-center gap-2 rounded-2xl bg-white text-indigo-900 font-extrabold text-xs px-4 sm:px-5 py-2.5 shadow-lg hover:bg-slate-100 transition-all active:scale-95 disabled:opacity-75 min-h-[40px]"
             >
               {isSearchingGoogle ? (
                 <>
@@ -373,9 +373,9 @@ function adaptProgramToMajor(prog: UniversityProgram, major: string): University
               )}
             </button>
 
-            <span className="text-xs text-purple-200 flex items-center gap-1 font-semibold">
+            <span className="text-[11px] sm:text-xs text-purple-200 flex items-center gap-1 font-semibold">
               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-300" />
-              <span>Covers 195+ Countries & All World Cities</span>
+              <span>Covers 195+ Countries & All Cities</span>
             </span>
           </div>
         </div>

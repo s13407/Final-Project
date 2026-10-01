@@ -229,7 +229,7 @@ export const AssessmentQuiz: React.FC<AssessmentQuizProps> = ({
         </div>
 
         {/* Category Jumpers / Segmented Progress Indicators */}
-        <div className="mt-5 flex flex-wrap gap-2">
+        <div className="mt-4 sm:mt-5 flex overflow-x-auto no-scrollbar gap-1.5 sm:gap-2 py-1 scroll-smooth">
           {(['C', 'A', 'L', 'I', 'P', 'S'] as CALIPSDimension[]).map((cat) => {
             const catInfo = CALIPS_CATEGORIES[cat];
             const catQuestions = CALIPS_QUESTIONS.filter((q) => q.category === cat);
@@ -244,7 +244,7 @@ export const AssessmentQuiz: React.FC<AssessmentQuizProps> = ({
                   const firstIdx = CALIPS_QUESTIONS.findIndex((q) => q.category === cat);
                   if (firstIdx !== -1) setCurrentIndex(firstIdx);
                 }}
-                className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition-all ${
+                className={`shrink-0 flex items-center gap-1.5 rounded-xl px-2.5 sm:px-3 py-1.5 text-xs font-bold transition-all min-h-[36px] ${
                   isCurrent
                     ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md shadow-purple-500/30'
                     : isDark
@@ -266,26 +266,26 @@ export const AssessmentQuiz: React.FC<AssessmentQuizProps> = ({
       {/* Main Content: Question Card OR Study Location Preference Step */}
       {!showLocationStep ? (
         <div
-          className={`mt-6 rounded-3xl border p-8 sm:p-10 shadow-2xl transition-all ${
+          className={`mt-4 sm:mt-6 rounded-3xl border p-5 sm:p-8 md:p-10 shadow-2xl transition-all ${
             isDark
               ? 'bg-[#0E1424]/90 border-white/10 text-slate-100'
               : 'bg-white border-slate-200 text-slate-900'
           }`}
         >
           {/* Dimension Header Banner */}
-          <div className="flex items-center justify-between border-b border-white/10 pb-5">
-            <div className="flex items-center gap-3.5">
+          <div className="flex items-center justify-between border-b border-white/10 pb-4 sm:pb-5">
+            <div className="flex items-center gap-3">
               <div
-                className="flex h-12 w-12 items-center justify-center rounded-2xl font-display text-xl font-bold text-white shadow-lg"
+                className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-2xl font-display text-lg sm:text-xl font-bold text-white shadow-lg shrink-0"
                 style={{ backgroundColor: currentCatInfo.accentColor }}
               >
                 {currentQuestion.category}
               </div>
               <div>
-                <div className="text-xs font-bold tracking-wider uppercase text-purple-400">
+                <div className="text-[11px] sm:text-xs font-bold tracking-wider uppercase text-purple-400">
                   Dimension {currentQuestion.category} · {currentCatInfo.title}
                 </div>
-                <div className="text-base font-bold">
+                <div className="text-sm sm:text-base font-bold">
                   {currentCatInfo.archetype}
                 </div>
               </div>
@@ -303,7 +303,7 @@ export const AssessmentQuiz: React.FC<AssessmentQuizProps> = ({
           </div>
 
           {/* Question Statement */}
-          <div className="py-10 text-center sm:py-14">
+          <div className="py-6 sm:py-12 text-center">
             <span
               className={`font-mono text-xs font-bold uppercase tracking-wider px-3.5 py-1 rounded-full border ${
                 isDark
@@ -313,11 +313,11 @@ export const AssessmentQuiz: React.FC<AssessmentQuizProps> = ({
             >
               Question #{currentQuestion.id}
             </span>
-            <h3 className="font-display mt-5 text-2xl font-extrabold sm:text-3xl lg:text-4xl leading-snug [text-wrap:balance]">
+            <h3 className="font-display mt-4 sm:mt-5 text-xl sm:text-2xl lg:text-3xl font-extrabold leading-snug [text-wrap:balance] break-words">
               "{currentQuestion.text}"
             </h3>
             <p
-              className={`mt-4 text-xs font-medium ${
+              className={`mt-3 sm:mt-4 text-xs font-medium ${
                 isDark ? 'text-slate-400' : 'text-slate-500'
               }`}
             >
@@ -334,11 +334,11 @@ export const AssessmentQuiz: React.FC<AssessmentQuizProps> = ({
           </div>
 
           {/* True / False Buttons */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             {/* True Button */}
             <button
               onClick={() => handleAnswer(true)}
-              className={`group relative flex items-center justify-between rounded-2xl border-2 p-5 text-left transition-all duration-200 ${
+              className={`group relative flex items-center justify-between rounded-2xl border-2 p-4 sm:p-5 text-left transition-all duration-200 min-h-[60px] active:scale-98 ${
                 answers[currentQuestion.id] === true
                   ? 'border-emerald-400 bg-emerald-500/15 shadow-lg shadow-emerald-500/20'
                   : isDark
@@ -346,9 +346,9 @@ export const AssessmentQuiz: React.FC<AssessmentQuizProps> = ({
                   : 'border-slate-200 bg-slate-50 hover:border-emerald-400 hover:bg-emerald-50/50'
               }`}
             >
-              <div className="flex items-center gap-3.5">
+              <div className="flex items-center gap-3">
                 <div
-                  className={`flex h-11 w-11 items-center justify-center rounded-xl font-bold transition-colors ${
+                  className={`flex h-10 w-10 items-center justify-center rounded-xl font-bold transition-colors shrink-0 ${
                     answers[currentQuestion.id] === true
                       ? 'bg-emerald-500 text-white'
                       : isDark
@@ -356,10 +356,10 @@ export const AssessmentQuiz: React.FC<AssessmentQuizProps> = ({
                       : 'bg-emerald-100 text-emerald-800'
                   }`}
                 >
-                  <Check className="h-6 w-6" />
+                  <Check className="h-5 w-5" />
                 </div>
                 <div>
-                  <div className="font-display text-lg font-extrabold">
+                  <div className="font-display text-base sm:text-lg font-extrabold">
                     True
                   </div>
                   <div
@@ -377,7 +377,7 @@ export const AssessmentQuiz: React.FC<AssessmentQuizProps> = ({
             {/* False Button */}
             <button
               onClick={() => handleAnswer(false)}
-              className={`group relative flex items-center justify-between rounded-2xl border-2 p-5 text-left transition-all duration-200 ${
+              className={`group relative flex items-center justify-between rounded-2xl border-2 p-4 sm:p-5 text-left transition-all duration-200 min-h-[60px] active:scale-98 ${
                 answers[currentQuestion.id] === false
                   ? 'border-rose-400 bg-rose-500/15 shadow-lg shadow-rose-500/20'
                   : isDark
@@ -385,9 +385,9 @@ export const AssessmentQuiz: React.FC<AssessmentQuizProps> = ({
                   : 'border-slate-200 bg-slate-50 hover:border-rose-400 hover:bg-rose-50/50'
               }`}
             >
-              <div className="flex items-center gap-3.5">
+              <div className="flex items-center gap-3">
                 <div
-                  className={`flex h-11 w-11 items-center justify-center rounded-xl font-bold transition-colors ${
+                  className={`flex h-10 w-10 items-center justify-center rounded-xl font-bold transition-colors shrink-0 ${
                     answers[currentQuestion.id] === false
                       ? 'bg-rose-500 text-white'
                       : isDark
@@ -395,10 +395,10 @@ export const AssessmentQuiz: React.FC<AssessmentQuizProps> = ({
                       : 'bg-rose-100 text-rose-800'
                   }`}
                 >
-                  <X className="h-6 w-6" />
+                  <X className="h-5 w-5" />
                 </div>
                 <div>
-                  <div className="font-display text-lg font-extrabold">
+                  <div className="font-display text-base sm:text-lg font-extrabold">
                     False
                   </div>
                   <div
@@ -415,66 +415,70 @@ export const AssessmentQuiz: React.FC<AssessmentQuizProps> = ({
           </div>
 
           {/* Navigation Controls */}
-          <div className="mt-8 flex items-center justify-between border-t border-white/10 pt-6">
-            <button
-              onClick={() => {
-                if (currentIndex > 0) setCurrentIndex((prev) => prev - 1);
-              }}
-              disabled={currentIndex === 0}
-              className={`flex items-center gap-1.5 text-xs font-bold transition-colors ${
-                currentIndex === 0
-                  ? 'opacity-30 cursor-not-allowed'
-                  : isDark
-                  ? 'text-slate-300 hover:text-white'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span>Previous Question</span>
-            </button>
-
-            {answeredCount >= 30 ? (
+          <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-white/10 pt-4 sm:pt-6">
+            <div className="flex items-center justify-between sm:justify-start gap-4 order-2 sm:order-1">
               <button
-                onClick={handleTriggerLocationStep}
-                className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-emerald-500/25 hover:from-emerald-600 hover:to-teal-600 transition-all active:scale-95"
-              >
-                <span>Continue to Target Study Destination</span>
-                <ArrowRight className="h-4 w-4" />
-              </button>
-            ) : (
-              <span
-                className={`text-xs ${
-                  isDark ? 'text-slate-400' : 'text-slate-500'
+                onClick={() => {
+                  if (currentIndex > 0) setCurrentIndex((prev) => prev - 1);
+                }}
+                disabled={currentIndex === 0}
+                className={`flex items-center gap-1.5 text-xs font-bold transition-colors py-2 px-3 rounded-xl border border-white/10 ${
+                  currentIndex === 0
+                    ? 'opacity-30 cursor-not-allowed'
+                    : isDark
+                    ? 'text-slate-300 hover:text-white bg-white/5'
+                    : 'text-slate-600 hover:text-slate-900 bg-slate-100'
                 }`}
               >
-                Answer at least 30 questions to proceed (currently {answeredCount}/60)
-              </span>
-            )}
+                <ArrowLeft className="h-4 w-4" />
+                <span>Previous</span>
+              </button>
 
-            <button
-              onClick={() => {
-                if (currentIndex < CALIPS_QUESTIONS.length - 1) {
-                  setCurrentIndex((prev) => prev + 1);
-                }
-              }}
-              disabled={currentIndex === CALIPS_QUESTIONS.length - 1}
-              className={`flex items-center gap-1.5 text-xs font-bold transition-colors ${
-                currentIndex === CALIPS_QUESTIONS.length - 1
-                  ? 'opacity-30 cursor-not-allowed'
-                  : isDark
-                  ? 'text-slate-300 hover:text-white'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <span>Next Question</span>
-              <ArrowRight className="h-4 w-4" />
-            </button>
+              <button
+                onClick={() => {
+                  if (currentIndex < CALIPS_QUESTIONS.length - 1) {
+                    setCurrentIndex((prev) => prev + 1);
+                  }
+                }}
+                disabled={currentIndex === CALIPS_QUESTIONS.length - 1}
+                className={`flex items-center gap-1.5 text-xs font-bold transition-colors py-2 px-3 rounded-xl border border-white/10 ${
+                  currentIndex === CALIPS_QUESTIONS.length - 1
+                    ? 'opacity-30 cursor-not-allowed'
+                    : isDark
+                    ? 'text-slate-300 hover:text-white bg-white/5'
+                    : 'text-slate-600 hover:text-slate-900 bg-slate-100'
+                }`}
+              >
+                <span>Next</span>
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="order-1 sm:order-2 w-full sm:w-auto text-center sm:text-right">
+              {answeredCount >= 30 ? (
+                <button
+                  onClick={handleTriggerLocationStep}
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 px-5 py-3 text-xs font-bold text-white shadow-lg shadow-emerald-500/25 hover:from-emerald-600 hover:to-teal-600 transition-all active:scale-95 min-h-[44px]"
+                >
+                  <span>Continue to Target Destination</span>
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              ) : (
+                <span
+                  className={`text-[11px] sm:text-xs block py-1 ${
+                    isDark ? 'text-slate-400' : 'text-slate-500'
+                  }`}
+                >
+                  Answer at least 30 questions to proceed ({answeredCount}/60)
+                </span>
+              )}
+            </div>
           </div>
         </div>
       ) : (
         /* Target Study Destination Step */
         <div
-          className={`mt-6 rounded-3xl border p-8 sm:p-10 shadow-2xl animate-fadeIn transition-all ${
+          className={`mt-4 sm:mt-6 rounded-3xl border p-5 sm:p-8 md:p-10 shadow-2xl animate-fadeIn transition-all ${
             isDark
               ? 'bg-[#0E1424]/90 border-white/10 text-slate-100'
               : 'bg-white border-slate-200 text-slate-900'

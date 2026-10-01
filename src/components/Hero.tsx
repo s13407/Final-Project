@@ -61,7 +61,7 @@ export const Hero: React.FC<HeroProps> = ({
       : 'from-cyan-500 via-teal-500 to-indigo-500 text-white';
 
   return (
-    <div className="relative overflow-hidden pt-8 pb-16 lg:pt-14 lg:pb-24">
+    <div className="relative overflow-hidden pt-4 sm:pt-8 pb-12 sm:pb-16 lg:pt-14 lg:pb-24">
       {/* Background Mesh Glows */}
       <div className="pointer-events-none absolute -top-24 left-1/2 -z-10 -translate-x-1/2 transform-gpu blur-3xl opacity-60">
         <div
@@ -75,9 +75,9 @@ export const Hero: React.FC<HeroProps> = ({
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Mood-Boosting Tag */}
-        <div className="mb-4 flex items-center justify-center gap-2 text-xs font-bold tracking-wide">
+        <div className="mb-4 flex items-center justify-center text-xs font-bold tracking-wide">
           <span
-            className={`flex items-center gap-2 rounded-full border px-4 py-1.5 shadow-sm transition-all ${
+            className={`flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 rounded-full border px-3 sm:px-4 py-1.5 shadow-sm transition-all text-center text-[11px] sm:text-xs ${
               vibe === 'eclipse' || vibe === 'abyss'
                 ? 'bg-amber-950/40 border-amber-500/30 text-amber-300'
                 : vibe === 'sunset'
@@ -87,19 +87,19 @@ export const Hero: React.FC<HeroProps> = ({
                 : 'bg-indigo-50 border-indigo-200 text-indigo-900'
             }`}
           >
-            <Sparkles className="h-4 w-4 fill-current animate-pulse" />
+            <Sparkles className="h-3.5 w-3.5 fill-current animate-pulse text-purple-400" />
             <span>CALIPS Archetype Model</span>
             <span className="opacity-40">·</span>
             <span>Gen-Z Career Navigator</span>
-            <span className="opacity-40">·</span>
-            <span className="text-emerald-400 font-semibold">Supabase PostgreSQL Live</span>
+            <span className="opacity-40 hidden sm:inline">·</span>
+            <span className="text-emerald-400 font-semibold hidden sm:inline">Supabase PostgreSQL Live</span>
           </span>
         </div>
 
         {/* Primary Headline with Rich Gradient */}
         <div className="text-center">
           <h1
-            className={`font-display text-4xl font-extrabold tracking-tight sm:text-6xl lg:text-7xl [text-wrap:balance] ${
+            className={`font-display text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight [text-wrap:balance] break-words ${
               isDark ? 'text-white' : 'text-slate-900'
             }`}
           >
@@ -112,7 +112,7 @@ export const Hero: React.FC<HeroProps> = ({
           </h1>
 
           <p
-            className={`mx-auto mt-6 max-w-2xl text-base sm:text-lg leading-relaxed [text-wrap:balance] ${
+            className={`mx-auto mt-4 sm:mt-6 max-w-2xl text-sm sm:text-lg leading-relaxed [text-wrap:balance] ${
               isDark ? 'text-slate-300' : 'text-slate-600'
             }`}
           >
@@ -121,7 +121,7 @@ export const Hero: React.FC<HeroProps> = ({
 
           {/* Exploratory Guidance Disclaimer */}
           <div
-            className={`mx-auto mt-6 inline-flex max-w-xl items-center gap-2.5 rounded-2xl border px-4 py-2.5 text-xs shadow-sm backdrop-blur-sm ${
+            className={`mx-auto mt-4 sm:mt-6 inline-flex max-w-xl items-center gap-2.5 rounded-2xl border px-3.5 sm:px-4 py-2 sm:py-2.5 text-xs shadow-sm backdrop-blur-sm text-left ${
               isDark
                 ? 'bg-white/5 border-white/10 text-slate-300'
                 : 'bg-indigo-50/80 border-indigo-200/80 text-indigo-950'
@@ -138,17 +138,17 @@ export const Hero: React.FC<HeroProps> = ({
                   : 'text-indigo-600'
               }`}
             />
-            <span>
+            <span className="text-[11px] sm:text-xs">
               <strong>Note for Students:</strong> PathCode is an exploratory career guidance tool to reveal possibilities, not a rigid prediction of your destiny.
             </span>
           </div>
         </div>
 
         {/* The Two Main Interactive Options */}
-        <div className="mt-12 grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
+        <div className="mt-8 sm:mt-12 grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
           {/* Option 1: Discover My Career (60-Question CALIPS Assessment) */}
           <div
-            className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border p-8 shadow-xl transition-all duration-300 hover:scale-[1.01] ${
+            className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border p-5 sm:p-8 shadow-xl transition-all duration-300 hover:scale-[1.01] ${
               vibe === 'eclipse' || vibe === 'abyss'
                 ? 'bg-[#111018]/90 border-amber-500/25 hover:border-amber-400/50 hover:shadow-amber-500/15'
                 : vibe === 'sunset'
@@ -202,75 +202,75 @@ export const Hero: React.FC<HeroProps> = ({
               </p>
 
               {/* 6 Dimension Badges */}
-              <div className="mt-6 grid grid-cols-3 gap-2.5 text-xs font-semibold">
+              <div className="mt-5 sm:mt-6 grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-2.5 text-xs font-semibold">
                 <div
-                  className={`flex items-center gap-2 rounded-xl p-2.5 border transition-all ${
+                  className={`flex items-center gap-2 rounded-xl p-2 sm:p-2.5 border transition-all ${
                     isDark
                       ? 'bg-sky-950/40 border-sky-500/30 text-sky-200'
                       : 'bg-sky-50 border-sky-200 text-sky-900'
                   }`}
                 >
-                  <span className="flex h-5 w-5 items-center justify-center rounded-md bg-sky-500 text-white font-bold text-[11px]">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-sky-500 text-white font-bold text-[11px]">
                     C
                   </span>
                   <span className="truncate">The Organizer</span>
                 </div>
                 <div
-                  className={`flex items-center gap-2 rounded-xl p-2.5 border transition-all ${
+                  className={`flex items-center gap-2 rounded-xl p-2 sm:p-2.5 border transition-all ${
                     isDark
                       ? 'bg-rose-950/40 border-rose-500/30 text-rose-200'
                       : 'bg-rose-50 border-rose-200 text-rose-900'
                   }`}
                 >
-                  <span className="flex h-5 w-5 items-center justify-center rounded-md bg-rose-500 text-white font-bold text-[11px]">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-rose-500 text-white font-bold text-[11px]">
                     A
                   </span>
                   <span className="truncate">The Creator</span>
                 </div>
                 <div
-                  className={`flex items-center gap-2 rounded-xl p-2.5 border transition-all ${
+                  className={`flex items-center gap-2 rounded-xl p-2 sm:p-2.5 border transition-all ${
                     isDark
                       ? 'bg-amber-950/40 border-amber-500/30 text-amber-200'
                       : 'bg-amber-50 border-amber-200 text-amber-900'
                   }`}
                 >
-                  <span className="flex h-5 w-5 items-center justify-center rounded-md bg-amber-500 text-white font-bold text-[11px]">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-amber-500 text-white font-bold text-[11px]">
                     L
                   </span>
                   <span className="truncate">The Leader</span>
                 </div>
                 <div
-                  className={`flex items-center gap-2 rounded-xl p-2.5 border transition-all ${
+                  className={`flex items-center gap-2 rounded-xl p-2 sm:p-2.5 border transition-all ${
                     isDark
                       ? 'bg-indigo-950/40 border-indigo-500/30 text-indigo-200'
                       : 'bg-indigo-50 border-indigo-200 text-indigo-900'
                   }`}
                 >
-                  <span className="flex h-5 w-5 items-center justify-center rounded-md bg-indigo-500 text-white font-bold text-[11px]">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-indigo-500 text-white font-bold text-[11px]">
                     I
                   </span>
                   <span className="truncate">The Analyst</span>
                 </div>
                 <div
-                  className={`flex items-center gap-2 rounded-xl p-2.5 border transition-all ${
+                  className={`flex items-center gap-2 rounded-xl p-2 sm:p-2.5 border transition-all ${
                     isDark
                       ? 'bg-emerald-950/40 border-emerald-500/30 text-emerald-200'
                       : 'bg-emerald-50 border-emerald-200 text-emerald-900'
                   }`}
                 >
-                  <span className="flex h-5 w-5 items-center justify-center rounded-md bg-emerald-500 text-white font-bold text-[11px]">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-emerald-500 text-white font-bold text-[11px]">
                     P
                   </span>
                   <span className="truncate">The Doer</span>
                 </div>
                 <div
-                  className={`flex items-center gap-2 rounded-xl p-2.5 border transition-all ${
+                  className={`flex items-center gap-2 rounded-xl p-2 sm:p-2.5 border transition-all ${
                     isDark
                       ? 'bg-purple-950/40 border-purple-500/30 text-purple-200'
                       : 'bg-purple-50 border-purple-200 text-purple-900'
                   }`}
                 >
-                  <span className="flex h-5 w-5 items-center justify-center rounded-md bg-purple-500 text-white font-bold text-[11px]">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-purple-500 text-white font-bold text-[11px]">
                     S
                   </span>
                   <span className="truncate">The Helper</span>
@@ -278,20 +278,20 @@ export const Hero: React.FC<HeroProps> = ({
               </div>
             </div>
 
-            <div className="relative z-10 mt-8 pt-5 border-t border-white/10">
+            <div className="relative z-10 mt-6 sm:mt-8 pt-4 sm:pt-5 border-t border-white/10">
               <button
                 onClick={onStartQuiz}
-                className={`flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r ${button1Gradient} px-5 py-4 text-sm font-bold shadow-lg hover:opacity-95 active:scale-98 transition-all`}
+                className={`flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r ${button1Gradient} px-4 sm:px-5 py-3.5 sm:py-4 text-xs sm:text-sm font-bold shadow-lg hover:opacity-95 active:scale-98 transition-all min-h-[48px]`}
               >
                 <span>Start 60-Question CALIPS Assessment</span>
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-4 w-4 shrink-0" />
               </button>
             </div>
           </div>
 
           {/* Option 2: I Know My Interest (Fast-Track) */}
           <div
-            className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border p-8 shadow-xl transition-all duration-300 hover:scale-[1.01] ${
+            className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border p-5 sm:p-8 shadow-xl transition-all duration-300 hover:scale-[1.01] ${
               vibe === 'eclipse' || vibe === 'abyss'
                 ? 'bg-[#111018]/90 border-yellow-500/25 hover:border-yellow-400/50 hover:shadow-yellow-500/15'
                 : vibe === 'sunset'
@@ -329,7 +329,7 @@ export const Hero: React.FC<HeroProps> = ({
               </div>
 
               <h2
-                className={`font-display mt-5 text-2xl font-bold sm:text-3xl ${
+                className={`font-display mt-4 sm:mt-5 text-2xl font-bold sm:text-3xl ${
                   isDark ? 'text-white' : 'text-slate-900'
                 }`}
               >
@@ -337,7 +337,7 @@ export const Hero: React.FC<HeroProps> = ({
               </h2>
 
               <p
-                className={`mt-3 text-sm leading-relaxed ${
+                className={`mt-2 sm:mt-3 text-sm leading-relaxed ${
                   isDark ? 'text-slate-300' : 'text-slate-600'
                 }`}
               >
@@ -345,7 +345,7 @@ export const Hero: React.FC<HeroProps> = ({
               </p>
 
               {/* Sample Quick-Tags */}
-              <div className="mt-6 flex flex-wrap gap-2 text-xs">
+              <div className="mt-5 sm:mt-6 flex flex-wrap gap-1.5 sm:gap-2 text-xs">
                 {[
                   'Artificial Intelligence',
                   'Biomedical Engineering',
@@ -356,7 +356,7 @@ export const Hero: React.FC<HeroProps> = ({
                 ].map((tag) => (
                   <span
                     key={tag}
-                    className={`rounded-xl border px-3 py-1.5 font-medium transition-all ${
+                    className={`rounded-xl border px-2.5 sm:px-3 py-1 sm:py-1.5 font-medium transition-all text-[11px] sm:text-xs ${
                       isDark
                         ? 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
                         : 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200'
@@ -368,20 +368,20 @@ export const Hero: React.FC<HeroProps> = ({
               </div>
             </div>
 
-            <div className="relative z-10 mt-8 pt-5 border-t border-white/10">
+            <div className="relative z-10 mt-6 sm:mt-8 pt-4 sm:pt-5 border-t border-white/10">
               <button
                 onClick={onStartDirect}
-                className={`flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r ${button2Gradient} px-5 py-4 text-sm font-bold shadow-lg hover:opacity-95 active:scale-98 transition-all`}
+                className={`flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r ${button2Gradient} px-4 sm:px-5 py-3.5 sm:py-4 text-xs sm:text-sm font-bold shadow-lg hover:opacity-95 active:scale-98 transition-all min-h-[48px]`}
               >
                 <span>Direct Interest Match & City Finder</span>
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-4 w-4 shrink-0" />
               </button>
             </div>
           </div>
         </div>
 
         {/* Feature Highlights Grid */}
-        <div className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="mt-10 sm:mt-16 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
           <div
             className={`rounded-2xl border p-6 transition-all ${
               isDark

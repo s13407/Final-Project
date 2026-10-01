@@ -362,27 +362,27 @@ export const DirectDecode: React.FC<DirectDecodeProps> = ({
 
       {/* Main Input Form */}
       <div
-        className={`rounded-3xl border p-6 sm:p-10 shadow-2xl transition-all ${
+        className={`rounded-3xl border p-5 sm:p-8 md:p-10 shadow-2xl transition-all ${
           isDark
             ? 'bg-[#0E1424]/90 border-white/10 text-slate-100'
             : 'bg-white border-slate-200 text-slate-900'
         }`}
       >
-        <div className="flex items-center gap-3 border-b border-white/10 pb-5">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-cyan-500 to-indigo-500 text-white shadow-lg shadow-cyan-500/25">
-            <Search className="h-6 w-6" />
+        <div className="flex items-center gap-3 border-b border-white/10 pb-4 sm:pb-5">
+          <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-cyan-500 to-indigo-500 text-white shadow-lg shadow-cyan-500/25 shrink-0">
+            <Search className="h-5 w-5 sm:h-6 sm:w-6" />
           </div>
           <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-cyan-400">
+            <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-cyan-400">
               Option 02 · Fast-Track Matching
             </span>
-            <h2 className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight">
+            <h2 className="font-display text-xl sm:text-3xl font-extrabold tracking-tight">
               I Know My Interest
             </h2>
           </div>
         </div>
 
-        <form onSubmit={handleDecode} className="mt-8 space-y-6">
+        <form onSubmit={handleDecode} className="mt-6 sm:mt-8 space-y-5 sm:space-y-6">
           <div>
             <label
               className={`block text-xs font-bold uppercase tracking-wider mb-2 ${
@@ -479,12 +479,12 @@ export const DirectDecode: React.FC<DirectDecodeProps> = ({
               isDark ? 'bg-white/[0.03] border-white/10' : 'bg-slate-50 border-slate-200'
             }`}
           >
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-cyan-400">
-                <MapPin className="h-4 w-4" />
+                <MapPin className="h-4 w-4 shrink-0" />
                 <span>4. Where are you looking for universities?</span>
               </div>
-              <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
+              <span className={`self-start sm:self-auto text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
                 effectiveCountry === 'Ecuador'
                   ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
                   : isDark ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30' : 'bg-cyan-50 text-cyan-800 border-cyan-200'
@@ -636,11 +636,11 @@ export const DirectDecode: React.FC<DirectDecodeProps> = ({
 
           <button
             type="submit"
-            className="w-full flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 via-teal-500 to-indigo-600 px-6 py-4 text-sm font-bold text-white shadow-lg shadow-cyan-500/25 hover:opacity-95 active:scale-98 transition-all"
+            className="w-full flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 via-teal-500 to-indigo-600 px-4 sm:px-6 py-3.5 sm:py-4 text-xs sm:text-sm font-bold text-white shadow-lg shadow-cyan-500/25 hover:opacity-95 active:scale-98 transition-all min-h-[48px]"
           >
-            <Sparkles className="h-4 w-4" />
-            <span>Decode Interest & Find University Programs</span>
-            <ArrowRight className="h-4 w-4" />
+            <Sparkles className="h-4 w-4 shrink-0" />
+            <span>Decode Interest & Find Programs</span>
+            <ArrowRight className="h-4 w-4 shrink-0" />
           </button>
         </form>
       </div>
@@ -650,7 +650,7 @@ export const DirectDecode: React.FC<DirectDecodeProps> = ({
         <div className="space-y-6 animate-fadeIn">
           {/* Decoded PathCode Card */}
           <div
-            className={`rounded-3xl border p-6 sm:p-8 shadow-xl transition-all ${
+            className={`rounded-3xl border p-5 sm:p-8 shadow-xl transition-all ${
               isDark
                 ? 'bg-[#0E1424]/90 border-white/10 text-slate-100'
                 : 'bg-white border-slate-200 text-slate-900'
