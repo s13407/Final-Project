@@ -240,64 +240,39 @@ export const Navbar: React.FC<NavbarProps> = ({
         </nav>
 
         {/* Right Side: Vibe Switcher + Supabase DB Badge + User Profile */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-          {/* Aesthetic Vibe Selector - Compact on Mobile, Full on Tablet/Desktop */}
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          {/* Aesthetic Vibe Selector */}
           <div
-            className={`flex items-center p-0.5 sm:p-1 rounded-full border transition-all ${
+            className={`flex items-center p-1 rounded-full border transition-all ${
               isDark ? 'bg-white/5 border-white/10' : 'bg-slate-100 border-slate-200'
             }`}
           >
-            {/* Desktop / Tablet: All 4 vibes */}
-            <div className="hidden sm:flex items-center">
-              {vibes.map((item) => {
-                const isSelected = vibe === item.id || (vibe === 'abyss' && item.id === 'eclipse');
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => onSelectVibe(item.id)}
-                    title={item.tag}
-                    className={`flex items-center gap-1.5 rounded-full px-2 sm:px-2.5 py-1 text-[11px] font-bold transition-all ${
-                      isSelected
-                        ? item.id === 'eclipse'
-                          ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-black shadow-xs'
-                          : item.id === 'sunset'
-                          ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-xs'
-                          : item.id === 'tokyo'
-                          ? 'bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white shadow-xs'
-                          : 'bg-white text-indigo-700 shadow-xs'
-                        : isDark
-                        ? 'text-slate-400 hover:text-white'
-                        : 'text-slate-500 hover:text-slate-900'
-                    }`}
-                  >
-                    <span>{item.emoji}</span>
-                    <span className="hidden xl:inline">{item.name}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Mobile-only compact vibe cycle button */}
-            <div className="flex sm:hidden items-center">
-              {(() => {
-                const currentIdx = vibes.findIndex(
-                  (v) => v.id === vibe || (vibe === 'abyss' && v.id === 'eclipse')
-                );
-                const nextVibe = vibes[(currentIdx + 1) % vibes.length];
-                const activeVibe = vibes[currentIdx !== -1 ? currentIdx : 0];
-                return (
-                  <button
-                    type="button"
-                    onClick={() => onSelectVibe(nextVibe.id)}
-                    title={`Theme: ${activeVibe.name}. Tap to cycle to ${nextVibe.name}`}
-                    className="flex items-center gap-1 rounded-full px-2 py-1 text-xs font-bold"
-                  >
-                    <span>{activeVibe.emoji}</span>
-                    <span className="text-[10px] opacity-75 font-mono">Theme</span>
-                  </button>
-                );
-              })()}
-            </div>
+            {vibes.map((item) => {
+              const isSelected = vibe === item.id || (vibe === 'abyss' && item.id === 'eclipse');
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => onSelectVibe(item.id)}
+                  title={item.tag}
+                  className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold transition-all ${
+                    isSelected
+                      ? item.id === 'eclipse'
+                        ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-black shadow-xs'
+                        : item.id === 'sunset'
+                        ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-xs'
+                        : item.id === 'tokyo'
+                        ? 'bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white shadow-xs'
+                        : 'bg-white text-indigo-700 shadow-xs'
+                      : isDark
+                      ? 'text-slate-400 hover:text-white'
+                      : 'text-slate-500 hover:text-slate-900'
+                  }`}
+                >
+                  <span>{item.emoji}</span>
+                  <span className="hidden xl:inline">{item.name}</span>
+                </button>
+              );
+            })}
           </div>
 
           {/* Supabase Live DB Pill */}
@@ -308,7 +283,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 ? 'Connected to live Supabase Database (click to inspect tables)'
                 : 'Supabase Database Config & Status'
             }
-            className={`flex items-center gap-1.5 rounded-full border px-2 sm:px-3 py-1 sm:py-1.5 text-xs font-bold transition-all shrink-0 ${
+            className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold transition-all ${
               isSupabaseConnected
                 ? isDark
                   ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/25 shadow-xs shadow-emerald-500/20'
@@ -319,7 +294,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             }`}
           >
             <Database className="h-3.5 w-3.5" />
-            <span className="hidden md:inline">Supabase</span>
+            <span className="hidden sm:inline">Supabase</span>
             <span
               className={`h-2 w-2 rounded-full ${
                 isSupabaseConnected
@@ -331,10 +306,10 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* User Profile or Sign In */}
           {currentUser ? (
-            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => setActiveTab('dashboard')}
-                className={`flex items-center gap-1.5 sm:gap-2 rounded-full border px-2 sm:px-3 py-1 sm:py-1.5 text-xs font-bold transition-all ${
+                className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold transition-all ${
                   isDark
                     ? 'bg-white/5 border-white/15 text-slate-100 hover:bg-white/10'
                     : 'bg-slate-100 border-slate-200 text-slate-800 hover:bg-slate-200'
@@ -345,10 +320,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 >
                   {currentUser.name.charAt(0).toUpperCase()}
                 </div>
-                <span className="max-w-[55px] sm:max-w-[85px] truncate">{currentUser.name}</span>
+                <span className="max-w-[90px] truncate">{currentUser.name}</span>
                 {currentUser.preferredCountry && (
                   <span
-                    className={`hidden md:flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full ${
+                    className={`hidden sm:flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full ${
                       vibe === 'eclipse' || vibe === 'abyss'
                         ? 'bg-amber-500/20 text-amber-300'
                         : vibe === 'sunset'
@@ -366,7 +341,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={onLogout}
                 title="Sign out"
-                className={`rounded-full p-1.5 sm:p-2 transition-colors ${
+                className={`rounded-full p-2 transition-colors ${
                   isDark
                     ? 'text-slate-400 hover:bg-white/10 hover:text-white'
                     : 'text-slate-400 hover:bg-slate-100 hover:text-slate-700'
@@ -378,18 +353,18 @@ export const Navbar: React.FC<NavbarProps> = ({
           ) : (
             <button
               onClick={onOpenAuth}
-              className={`flex items-center gap-1.5 rounded-full bg-gradient-to-r ${brandIconBg} px-2.5 sm:px-4 py-1 sm:py-1.5 text-xs font-bold shadow-md hover:opacity-95 active:scale-95 transition-all shrink-0`}
+              className={`flex items-center gap-1.5 rounded-full bg-gradient-to-r ${brandIconBg} px-4 py-1.5 text-xs font-bold shadow-md hover:opacity-95 active:scale-95 transition-all`}
             >
               <Key className="h-3.5 w-3.5" />
-              <span>Log In</span>
+              <span>Student Log In</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* Mobile & Tablet Quick Bar with Smooth Horizontal Touch Scrolling */}
+      {/* Mobile Quick Bar */}
       <div
-        className={`flex lg:hidden overflow-x-auto border-t px-2 sm:px-4 py-1.5 sm:py-2 text-xs font-bold gap-1.5 sm:gap-2.5 no-scrollbar scroll-smooth ${
+        className={`flex lg:hidden overflow-x-auto border-t px-4 py-2 text-xs font-bold gap-4 no-scrollbar ${
           vibe === 'eclipse' || vibe === 'abyss'
             ? 'bg-[#090A10]/95 border-amber-500/15 text-slate-300'
             : vibe === 'sunset'
@@ -401,74 +376,38 @@ export const Navbar: React.FC<NavbarProps> = ({
       >
         <button
           onClick={() => setActiveTab('home')}
-          className={`shrink-0 rounded-xl px-2.5 sm:px-3 py-1.5 transition-all min-h-[36px] flex items-center gap-1 ${
-            activeTab === 'home'
-              ? isDark
-                ? 'bg-white/15 text-white shadow-xs font-black'
-                : 'bg-indigo-50 text-indigo-700 shadow-xs font-black'
-              : 'hover:text-white'
-          }`}
+          className={`whitespace-nowrap ${activeTab === 'home' ? activeLinkClass : ''}`}
         >
           Home
         </button>
         <button
           onClick={() => setActiveTab('quiz')}
-          className={`shrink-0 rounded-xl px-2.5 sm:px-3 py-1.5 transition-all min-h-[36px] flex items-center gap-1 ${
-            activeTab === 'quiz'
-              ? isDark
-                ? 'bg-white/15 text-white shadow-xs font-black'
-                : 'bg-indigo-50 text-indigo-700 shadow-xs font-black'
-              : 'hover:text-white'
-          }`}
+          className={`whitespace-nowrap ${activeTab === 'quiz' ? activeLinkClass : ''}`}
         >
           CALIPS Quiz
         </button>
         <button
           onClick={() => setActiveTab('direct')}
-          className={`shrink-0 rounded-xl px-2.5 sm:px-3 py-1.5 transition-all min-h-[36px] flex items-center gap-1 ${
-            activeTab === 'direct'
-              ? isDark
-                ? 'bg-white/15 text-white shadow-xs font-black'
-                : 'bg-indigo-50 text-indigo-700 shadow-xs font-black'
-              : 'hover:text-white'
-          }`}
+          className={`whitespace-nowrap ${activeTab === 'direct' ? activeLinkClass : ''}`}
         >
           Know Interest
         </button>
         <button
           onClick={() => setActiveTab('universities')}
-          className={`shrink-0 rounded-xl px-2.5 sm:px-3 py-1.5 transition-all min-h-[36px] flex items-center gap-1 ${
-            activeTab === 'universities'
-              ? isDark
-                ? 'bg-white/15 text-white shadow-xs font-black'
-                : 'bg-indigo-50 text-indigo-700 shadow-xs font-black'
-              : 'hover:text-white'
-          }`}
+          className={`whitespace-nowrap ${activeTab === 'universities' ? activeLinkClass : ''}`}
         >
           Universities
         </button>
         <button
           onClick={() => setActiveTab('careers')}
-          className={`shrink-0 rounded-xl px-2.5 sm:px-3 py-1.5 transition-all min-h-[36px] flex items-center gap-1 ${
-            activeTab === 'careers'
-              ? isDark
-                ? 'bg-white/15 text-white shadow-xs font-black'
-                : 'bg-indigo-50 text-indigo-700 shadow-xs font-black'
-              : 'hover:text-white'
-          }`}
+          className={`whitespace-nowrap ${activeTab === 'careers' ? activeLinkClass : ''}`}
         >
           Career Library
         </button>
         {currentUser && (
           <button
             onClick={() => setActiveTab('dashboard')}
-            className={`shrink-0 rounded-xl px-2.5 sm:px-3 py-1.5 transition-all min-h-[36px] flex items-center gap-1 ${
-              activeTab === 'dashboard'
-                ? isDark
-                  ? 'bg-white/15 text-white shadow-xs font-black'
-                  : 'bg-indigo-50 text-indigo-700 shadow-xs font-black'
-                : 'hover:text-white'
-            }`}
+            className={`whitespace-nowrap ${activeTab === 'dashboard' ? activeLinkClass : ''}`}
           >
             Dashboard
           </button>
