@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   DEPARTMENTS,
   POPULAR_INTEREST_TAGS,
@@ -7,6 +7,7 @@ import {
 } from '../data/calipsData';
 import {
   UNIVERSITY_PROGRAMS,
+  getAllUniversityPrograms,
   filterUniversitiesByLocation,
   POPULAR_COUNTRIES,
   getCitiesForCountry
@@ -14,6 +15,7 @@ import {
 import {
   CALIPSDimension,
   DirectInterestMatch,
+  UniversityProgram,
   ThemeVibe
 } from '../types';
 import {
@@ -30,7 +32,8 @@ import {
   CheckCircle2,
   Bookmark,
   MapPin,
-  Globe
+  Globe,
+  Loader2
 } from 'lucide-react';
 
 interface DirectDecodeProps {
@@ -53,12 +56,35 @@ export const DirectDecode: React.FC<DirectDecodeProps> = ({
   const [interest, setInterest] = useState('');
   const [department, setDepartment] = useState<string>(DEPARTMENTS[0]);
   const [field, setField] = useState('');
-  const [preferredCountry, setPreferredCountry] = useState<string>('Anywhere / Global');
+  const [preferredCountry, setPreferredCountry] = useState<string>('Ecuador');
+  const [customCountry, setCustomCountry] = useState('');
   const [preferredCity, setPreferredCity] = useState<string>('Any City / Flexible');
   const [customCity, setCustomCity] = useState('');
   const [matchResult, setMatchResult] = useState<DirectInterestMatch | null>(null);
+  const [liveUniversities, setLiveUniversities] = useState<UniversityProgram[]>([]);
+  const [isLoadingUnis, setIsLoadingUnis] = useState<boolean>(false);
 
   const isDark = vibe !== 'electric';
+
+  // Smart resolution of country and city
+  const rawCountry = (customCountry.trim() || preferredCountry).trim();
+  const rawCity = (customCity.trim() || preferredCity).trim();
+
+  // If user wrote "Ecuador" in either country or city input
+  const isEcuador =
+    rawCountry.toLowerCase() === 'ecuador' ||
+    rawCity.toLowerCase() === 'ecuador' ||
+    rawCity.toLowerCase().includes('ecuador');
+
+  const effectiveCountry = isEcuador
+    ? 'Ecuador'
+    : (rawCountry && rawCountry !== 'Anywhere / Global')
+    ? rawCountry
+    : 'Anywhere / Global';
+
+  const effectiveCity = (rawCity.toLowerCase() === 'ecuador')
+    ? (preferredCity !== 'Any City / Flexible' && !preferredCity.toLowerCase().includes('ecuador') ? preferredCity : '')
+    : rawCity;
 
   const handleDecode = (e: React.FormEvent) => {
     e.preventDefault();
@@ -223,18 +249,100 @@ export const DirectDecode: React.FC<DirectDecodeProps> = ({
     }
   };
 
-  const finalCity = customCity.trim() || preferredCity;
-  const baseMatchingUniversities = matchResult
-    ? UNIVERSITY_PROGRAMS.filter((p) =>
+  const finalCity = effectiveCity;
+
+  // Live university fetching tailored to student's exact country, city, and interest field
+  useEffect(() => {
+    if (!matchResult) return;
+
+    let isCancelled = false;
+    const fetchDirectUnis = async () => {
+      setIsLoadingUnis(true);
+      try {
+        const res = await fetch('/api/universities/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            country: effectiveCountry !== 'Anywhere / Global' ? effectiveCountry : undefined,
+            city: finalCity && finalCity !== 'Any City / Flexible' && !finalCity.includes('Capital / Metro') ? finalCity : undefined,
+            major: matchResult.field || matchResult.interest,
+            dimension: matchResult.primaryCategory
+          })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (!isCancelled && data.universities && data.universities.length > 0) {
+            setLiveUniversities(data.universities);
+          }
+        }
+      } catch (err) {
+        console.warn('DirectDecode live search notice:', err);
+      } finally {
+        if (!isCancelled) {
+          setIsLoadingUnis(false);
+        }
+      }
+    };
+
+    fetchDirectUnis();
+    return () => {
+      isCancelled = true;
+    };
+  }, [matchResult, effectiveCountry, finalCity]);
+
+  // Compute matching universities strictly adhering to student's target country & city
+  const allAvailablePrograms = getAllUniversityPrograms();
+  const staticMatching = matchResult
+    ? allAvailablePrograms.filter((p) =>
         p.calipsCodes.includes(matchResult.primaryCategory)
       )
     : [];
 
-  const locationTailoredUniversities = filterUniversitiesByLocation(
-    baseMatchingUniversities,
-    preferredCountry,
+  const staticLocationMatches = filterUniversitiesByLocation(
+    staticMatching,
+    effectiveCountry,
     finalCity
   );
+
+  // Combine static repository and live search results (preventing duplicates)
+  const combinedUniversities = (() => {
+    const map = new Map<string, UniversityProgram>();
+    // Prioritize live-fetched universities which are dynamically tailored to the major and country
+    liveUniversities.forEach((u) => map.set(u.universityName.toLowerCase().trim(), u));
+    staticLocationMatches.forEach((u) => {
+      const key = u.universityName.toLowerCase().trim();
+      if (!map.has(key)) map.set(key, u);
+    });
+    return Array.from(map.values());
+  })();
+
+  // Enforce strict country boundaries: if student selected or wrote Ecuador, ONLY show Ecuador universities!
+  const displayedUniversities = (() => {
+    if (effectiveCountry && effectiveCountry !== 'Anywhere / Global') {
+      const inCountry = combinedUniversities.filter(
+        (u) => u.country.toLowerCase() === effectiveCountry.toLowerCase()
+      );
+      if (inCountry.length > 0) {
+        if (finalCity && finalCity !== 'Any City / Flexible' && !finalCity.includes('Capital / Metro')) {
+          const inCity = inCountry.filter(
+            (u) =>
+              u.city.toLowerCase().includes(finalCity.toLowerCase()) ||
+              finalCity.toLowerCase().includes(u.city.toLowerCase())
+          );
+          if (inCity.length > 0) {
+            const cityIds = new Set(inCity.map((c) => c.id));
+            return [...inCity, ...inCountry.filter((u) => !cityIds.has(u.id))];
+          }
+        }
+        return inCountry;
+      }
+      return []; // Strictly never fall back to another country when Ecuador is requested!
+    }
+
+    if (combinedUniversities.length > 0) return combinedUniversities;
+    return staticMatching;
+  })();
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
@@ -371,9 +479,62 @@ export const DirectDecode: React.FC<DirectDecodeProps> = ({
               isDark ? 'bg-white/[0.03] border-white/10' : 'bg-slate-50 border-slate-200'
             }`}
           >
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-cyan-400">
-              <MapPin className="h-4 w-4" />
-              <span>4. Where are you looking for universities?</span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-cyan-400">
+                <MapPin className="h-4 w-4" />
+                <span>4. Where are you looking for universities?</span>
+              </div>
+              <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
+                effectiveCountry === 'Ecuador'
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                  : isDark ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30' : 'bg-cyan-50 text-cyan-800 border-cyan-200'
+              }`}>
+                Active: {effectiveCountry} {effectiveCity && effectiveCity !== 'Any City / Flexible' ? `(${effectiveCity})` : ''}
+              </span>
+            </div>
+
+            {/* Quick Country Destination Chips */}
+            <div>
+              <span className={`block text-[11px] font-semibold mb-2 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                Quick Select Destination:
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  'Ecuador',
+                  'Pakistan',
+                  'United States',
+                  'United Kingdom',
+                  'Canada',
+                  'Germany',
+                  'Australia',
+                  'United Arab Emirates',
+                  'Saudi Arabia',
+                  'Japan',
+                  'Spain',
+                  'Anywhere / Global'
+                ].map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => {
+                      setPreferredCountry(c);
+                      setCustomCountry('');
+                      const cities = getCitiesForCountry(c);
+                      setPreferredCity(cities[0] || 'Any City / Flexible');
+                      setCustomCity('');
+                    }}
+                    className={`rounded-xl px-2.5 py-1 text-xs font-bold transition-all border ${
+                      effectiveCountry === c
+                        ? 'bg-cyan-500 text-white border-cyan-400 shadow-sm'
+                        : isDark
+                        ? 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
+                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'
+                    }`}
+                  >
+                    {c === 'Ecuador' ? '🇪🇨 Ecuador' : c}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -383,27 +544,51 @@ export const DirectDecode: React.FC<DirectDecodeProps> = ({
                     isDark ? 'text-slate-300' : 'text-slate-700'
                   }`}
                 >
-                  Target Country
+                  Target Country (Type or Select)
                 </label>
-                <select
-                  value={preferredCountry}
-                  onChange={(e) => {
-                    setPreferredCountry(e.target.value);
-                    const cities = getCitiesForCountry(e.target.value);
-                    setPreferredCity(cities[0] || 'Any City / Flexible');
-                  }}
-                  className={`w-full rounded-xl border px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
-                    isDark
-                      ? 'bg-[#141b2d] border-white/10 text-white'
-                      : 'bg-white border-slate-200 text-slate-900'
-                  }`}
-                >
-                  {POPULAR_COUNTRIES.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    placeholder="Type country name (e.g. Ecuador, Germany)..."
+                    value={customCountry}
+                    onChange={(e) => {
+                      setCustomCountry(e.target.value);
+                      if (e.target.value.trim()) {
+                        const matched = POPULAR_COUNTRIES.find(
+                          (c) => c.toLowerCase() === e.target.value.trim().toLowerCase()
+                        );
+                        if (matched) {
+                          setPreferredCountry(matched);
+                        }
+                      }
+                    }}
+                    className={`w-full rounded-xl border px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
+                      isDark
+                        ? 'bg-white/5 border-white/10 text-white placeholder-slate-500'
+                        : 'bg-white border-slate-200 text-slate-900 placeholder-slate-400'
+                    }`}
+                  />
+                  <select
+                    value={preferredCountry}
+                    onChange={(e) => {
+                      setPreferredCountry(e.target.value);
+                      setCustomCountry('');
+                      const cities = getCitiesForCountry(e.target.value);
+                      setPreferredCity(cities[0] || 'Any City / Flexible');
+                    }}
+                    className={`w-full rounded-xl border px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
+                      isDark
+                        ? 'bg-[#141b2d] border-white/10 text-white'
+                        : 'bg-white border-slate-200 text-slate-900'
+                    }`}
+                  >
+                    {POPULAR_COUNTRIES.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <div>
@@ -412,40 +597,41 @@ export const DirectDecode: React.FC<DirectDecodeProps> = ({
                     isDark ? 'text-slate-300' : 'text-slate-700'
                   }`}
                 >
-                  Target City
+                  Target City (Type or Select)
                 </label>
-                <select
-                  value={preferredCity}
-                  onChange={(e) => {
-                    setPreferredCity(e.target.value);
-                    setCustomCity('');
-                  }}
-                  className={`w-full rounded-xl border px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
-                    isDark
-                      ? 'bg-[#141b2d] border-white/10 text-white'
-                      : 'bg-white border-slate-200 text-slate-900'
-                  }`}
-                >
-                  {getCitiesForCountry(preferredCountry).map((city: string) => (
-                    <option key={city} value={city}>
-                      {city}
-                    </option>
-                  ))}
-                </select>
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    placeholder="Type city (e.g. Quito, Guayaquil, Cuenca)..."
+                    value={customCity}
+                    onChange={(e) => setCustomCity(e.target.value)}
+                    className={`w-full rounded-xl border px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
+                      isDark
+                        ? 'bg-white/5 border-white/10 text-white placeholder-slate-500'
+                        : 'bg-white border-slate-200 text-slate-900 placeholder-slate-400'
+                    }`}
+                  />
+                  <select
+                    value={preferredCity}
+                    onChange={(e) => {
+                      setPreferredCity(e.target.value);
+                      setCustomCity('');
+                    }}
+                    className={`w-full rounded-xl border px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
+                      isDark
+                        ? 'bg-[#141b2d] border-white/10 text-white'
+                        : 'bg-white border-slate-200 text-slate-900'
+                    }`}
+                  >
+                    {getCitiesForCountry(effectiveCountry).map((city: string) => (
+                      <option key={city} value={city}>
+                        {city}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
-
-            <input
-              type="text"
-              placeholder="Or type a specific city (e.g. Karachi, Manchester, Austin)..."
-              value={customCity}
-              onChange={(e) => setCustomCity(e.target.value)}
-              className={`w-full rounded-xl border px-3 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
-                isDark
-                  ? 'bg-white/5 border-white/10 text-white placeholder-slate-500'
-                  : 'bg-white border-slate-200 text-slate-900 placeholder-slate-400'
-              }`}
-            />
           </div>
 
           <button
@@ -660,22 +846,46 @@ export const DirectDecode: React.FC<DirectDecodeProps> = ({
                   University Degree Programs{' '}
                   <span className="text-cyan-400">
                     {finalCity && finalCity !== 'Any City / Flexible'
-                      ? `in ${finalCity}`
-                      : preferredCountry !== 'Anywhere / Global'
-                      ? `in ${preferredCountry}`
+                      ? `in ${finalCity}, ${effectiveCountry}`
+                      : effectiveCountry !== 'Anywhere / Global'
+                      ? `in ${effectiveCountry}`
                       : 'Worldwide'}
                   </span>
                 </h3>
               </div>
             </div>
 
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-              {(locationTailoredUniversities.length > 0
-                ? locationTailoredUniversities
-                : baseMatchingUniversities
-              )
-                .slice(0, 6)
-                .map((prog) => {
+            {isLoadingUnis && (
+              <div className="flex items-center justify-center gap-3 py-12 text-xs font-semibold text-cyan-400">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <span>
+                  Querying global academic registries for accredited universities in{' '}
+                  {effectiveCountry !== 'Anywhere / Global' ? effectiveCountry : 'target region'}...
+                </span>
+              </div>
+            )}
+
+            {!isLoadingUnis && displayedUniversities.length === 0 && (
+              <div
+                className={`mt-6 rounded-2xl border p-8 text-center space-y-3 ${
+                  isDark ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-slate-200'
+                }`}
+              >
+                <GraduationCap className="h-8 w-8 mx-auto text-cyan-400 opacity-60" />
+                <h4 className="font-display font-bold text-base">
+                  No universities currently found in{' '}
+                  {finalCity && finalCity !== 'Any City / Flexible' ? `${finalCity}, ` : ''}
+                  {effectiveCountry !== 'Anywhere / Global' ? effectiveCountry : 'this region'} matching this specific field
+                </h4>
+                <p className={`text-xs max-w-md mx-auto ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                  We respect your target destination and do not substitute other regions. You can explore all universities in {effectiveCountry} in the Universities tab.
+                </p>
+              </div>
+            )}
+
+            {!isLoadingUnis && displayedUniversities.length > 0 && (
+              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                {displayedUniversities.slice(0, 8).map((prog) => {
                   const isSaved = savedUniversities.includes(prog.id);
                   return (
                     <div
@@ -758,7 +968,8 @@ export const DirectDecode: React.FC<DirectDecodeProps> = ({
                     </div>
                   );
                 })}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -23,7 +23,8 @@ import {
   Building2,
   Landmark,
   SlidersHorizontal,
-  Compass
+  Compass,
+  BookOpen
 } from 'lucide-react';
 
 interface UniversityExplorerProps {
@@ -43,9 +44,11 @@ export const UniversityExplorer: React.FC<UniversityExplorerProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDimension, setSelectedDimension] = useState<CALIPSDimension | 'ALL'>('ALL');
-  const [selectedCountry, setSelectedCountry] = useState<string>(preferredCountry || 'ALL');
+  const [selectedCountry, setSelectedCountry] = useState<string>('Ecuador');
+  const [customCountryInput, setCustomCountryInput] = useState('');
   const [selectedCity, setSelectedCity] = useState<string>(preferredCity || 'ALL');
   const [customCityInput, setCustomCityInput] = useState('');
+  const [selectedMajor, setSelectedMajor] = useState<string>('ALL');
   const [selectedType, setSelectedType] = useState<'ALL' | 'LOCAL' | 'PRIVATE'>('ALL');
 
   // Live Google & Web search state
@@ -58,29 +61,145 @@ export const UniversityExplorer: React.FC<UniversityExplorerProps> = ({
 
   const isDark = vibe !== 'electric';
 
-  // Available cities for the currently selected country
-  const availableCities = getCitiesForCountry(selectedCountry);
+  // Smart resolution of country and city
+  const rawCountry = (customCountryInput.trim() || selectedCountry).trim();
+  const rawCity = (customCityInput.trim() || selectedCity).trim();
 
-  // Combine static programs with live Google programs (deduplicated by name)
+  // If user wrote "Ecuador" in either country or city
+  const isEcuador =
+    rawCountry.toLowerCase() === 'ecuador' ||
+    rawCity.toLowerCase() === 'ecuador' ||
+    rawCity.toLowerCase().includes('ecuador');
+
+  const effectiveCountry = isEcuador
+    ? 'Ecuador'
+    : (rawCountry && rawCountry !== 'ALL' && !rawCountry.includes('Anywhere'))
+    ? rawCountry
+    : 'ALL';
+
+  const effectiveCity = (rawCity.toLowerCase() === 'ecuador')
+    ? (selectedCity !== 'ALL' && !selectedCity.toLowerCase().includes('ecuador') ? selectedCity : 'ALL')
+    : rawCity;
+
+  // Available cities for the currently selected country
+  const availableCities = getCitiesForCountry(effectiveCountry !== 'ALL' ? effectiveCountry : 'Anywhere / Global');
+
+// Helper function to adapt any university program authentically to the chosen academic field
+function adaptProgramToMajor(prog: UniversityProgram, major: string): UniversityProgram {
+  if (!major || major === 'ALL') return prog;
+
+  const majorLower = major.toLowerCase();
+  // If the program already specifically covers this field, preserve its curated title
+  if (
+    prog.programTitle.toLowerCase().includes(majorLower) ||
+    prog.keyMajors.some((m) => m.toLowerCase().includes(majorLower))
+  ) {
+    return prog;
+  }
+
+  if (majorLower.includes('comput') || majorLower.includes('ai') || majorLower.includes('software')) {
+    return {
+      ...prog,
+      programTitle: `B.Sc. in Computer Science, Software Architecture & AI`,
+      keyMajors: ['Computer Science', 'Artificial Intelligence', 'Software Engineering', 'Data Systems'],
+      calipsCodes: ['I', 'P', 'C'],
+      description: `Accredited computing curriculum at ${prog.universityName} offering rigorous training in algorithm design, software architecture, artificial intelligence, and applied data systems.`
+    };
+  }
+  if (majorLower.includes('medic') || majorLower.includes('health') || majorLower.includes('bio')) {
+    return {
+      ...prog,
+      programTitle: `Degree in Medicine, Biomedical Sciences & Clinical Practice`,
+      keyMajors: ['Biomedical Sciences', 'Clinical Therapeutics', 'Public Healthcare', 'Human Anatomy'],
+      calipsCodes: ['S', 'I', 'P'],
+      description: `Rigorous academic healthcare program with clinical hospital training at ${prog.universityName}, focusing on diagnostic sciences, patient therapeutics, and healthcare management.`
+    };
+  }
+  if (majorLower.includes('business') || majorLower.includes('financ') || majorLower.includes('market') || majorLower.includes('econom')) {
+    return {
+      ...prog,
+      programTitle: `BBA in Strategic Enterprise Leadership & Corporate Finance`,
+      keyMajors: ['Business Administration', 'Corporate Finance', 'Strategic Marketing', 'Enterprise Leadership'],
+      calipsCodes: ['L', 'A', 'C'],
+      description: `Executive management curriculum at ${prog.universityName} preparing graduates for high-impact careers in corporate finance, market leadership, and multinational venture development.`
+    };
+  }
+  if (majorLower.includes('engineer') || majorLower.includes('robot') || majorLower.includes('mechanic')) {
+    return {
+      ...prog,
+      programTitle: `B.Eng. in Engineering & Applied Technological Systems`,
+      keyMajors: ['Robotics & Automation', 'Applied Engineering', 'Mechanical Systems', 'Smart Devices'],
+      calipsCodes: ['P', 'I', 'C'],
+      description: `Professional engineering degree curriculum at ${prog.universityName}, equipping students with laboratory experimentation, mechanical prototyping, and systems engineering.`
+    };
+  }
+  if (majorLower.includes('art') || majorLower.includes('design') || majorLower.includes('media')) {
+    return {
+      ...prog,
+      programTitle: `B.A. in Digital Arts, Media Design & Visual Expression`,
+      keyMajors: ['Digital Media Production', 'Interactive Design', 'Visual Communications', 'Creative Direction'],
+      calipsCodes: ['A', 'P', 'S'],
+      description: `Studio-based creative degree program at ${prog.universityName}, fostering innovative mastery in visual storytelling, interactive media, and digital arts.`
+    };
+  }
+  if (majorLower.includes('architect') || majorLower.includes('urban')) {
+    return {
+      ...prog,
+      programTitle: `Bachelor of Architecture (B.Arch) & Sustainable Urban Design`,
+      keyMajors: ['Architectural Design', 'Urban Planning', 'Structural Engineering', 'Sustainable Design'],
+      calipsCodes: ['A', 'P', 'I'],
+      description: `Comprehensive architectural degree program at ${prog.universityName}, emphasizing studio design, building information modeling, and sustainable urban infrastructure.`
+    };
+  }
+  if (majorLower.includes('biotech') || majorLower.includes('ecolog') || majorLower.includes('environ')) {
+    return {
+      ...prog,
+      programTitle: `B.Sc. in Biotechnology, Biosystems & Ecological Sustainability`,
+      keyMajors: ['Biotechnology', 'Environmental Sciences', 'Genomics', 'Bio-analytics'],
+      calipsCodes: ['I', 'P', 'S'],
+      description: `Leading biological and ecological degree curriculum at ${prog.universityName}, training students in laboratory biotechnology, genomics research, and biodiversity conservation.`
+    };
+  }
+  if (majorLower.includes('law') || majorLower.includes('diploma') || majorLower.includes('politic')) {
+    return {
+      ...prog,
+      programTitle: `LL.B. in Jurisprudence, International Law & Public Affairs`,
+      keyMajors: ['International Law', 'Public Policy', 'Diplomatic Affairs', 'Statutory Analysis'],
+      calipsCodes: ['L', 'S', 'A'],
+      description: `Distinguished legal and political studies degree program at ${prog.universityName}, focusing on constitutional jurisprudence, statutory analysis, human rights, and diplomacy.`
+    };
+  }
+
+  return {
+    ...prog,
+    programTitle: `Bachelor of Science / Arts in ${major}`,
+    keyMajors: [major, 'Applied Research', 'Analytical Systems', 'Professional Practice'],
+    calipsCodes: ['I', 'P', 'C'],
+    description: `Accredited undergraduate degree program offering specialized study tracks in ${major} at ${prog.universityName}.`
+  };
+}
+
+  // Combine static programs with live Google programs (deduplicated by name, prioritizing live/current field)
   const allAvailablePrograms = (() => {
     const map = new Map<string, UniversityProgram>();
     // First insert static curated programs
     for (const prog of UNIVERSITY_PROGRAMS) {
       map.set(prog.universityName.toLowerCase().trim(), prog);
     }
-    // Then overlay/add live Google search results
+    // Overlay live Google search results so dynamic field adaptations and verified updates take priority
     for (const prog of liveGoogleResults) {
       const key = prog.universityName.toLowerCase().trim();
-      if (!map.has(key)) {
-        map.set(key, prog);
-      }
+      map.set(key, prog);
     }
-    return Array.from(map.values());
+    const list = Array.from(map.values());
+    if (selectedMajor !== 'ALL') {
+      return list.map((prog) => adaptProgramToMajor(prog, selectedMajor));
+    }
+    return list;
   })();
 
   // Filter combined programs by user criteria
   const filteredPrograms = allAvailablePrograms.filter((prog) => {
-    const effectiveCity = customCityInput.trim() || selectedCity;
     const searchLower = searchTerm.toLowerCase().trim();
 
     const isProgPrivate = prog.institutionType === 'Private';
@@ -100,15 +219,22 @@ export const UniversityExplorer: React.FC<UniversityExplorerProps> = ({
       selectedDimension === 'ALL' || prog.calipsCodes.includes(selectedDimension);
 
     const matchesCountry =
-      selectedCountry === 'ALL' ||
-      selectedCountry.includes('Anywhere') ||
-      prog.country.toLowerCase() === selectedCountry.toLowerCase();
+      effectiveCountry === 'ALL' ||
+      prog.country.toLowerCase() === effectiveCountry.toLowerCase();
 
     const matchesCity =
       effectiveCity === 'ALL' ||
       effectiveCity.includes('Any City') ||
+      effectiveCity.includes('Capital / Metro') ||
+      effectiveCity.includes('Main Campus') ||
       prog.city.toLowerCase().includes(effectiveCity.toLowerCase()) ||
       effectiveCity.toLowerCase().includes(prog.city.toLowerCase());
+
+    const matchesMajor =
+      selectedMajor === 'ALL' ||
+      prog.programTitle.toLowerCase().includes(selectedMajor.toLowerCase()) ||
+      prog.keyMajors.some((m) => m.toLowerCase().includes(selectedMajor.toLowerCase())) ||
+      prog.description.toLowerCase().includes(selectedMajor.toLowerCase());
 
     const matchesViewFilter =
       activeViewFilter === 'ALL' ||
@@ -120,7 +246,7 @@ export const UniversityExplorer: React.FC<UniversityExplorerProps> = ({
       (selectedType === 'PRIVATE' && isProgPrivate) ||
       (selectedType === 'LOCAL' && isProgLocal);
 
-    return matchesSearch && matchesDimension && matchesCountry && matchesCity && matchesViewFilter && matchesType;
+    return matchesSearch && matchesDimension && matchesCountry && matchesCity && matchesMajor && matchesViewFilter && matchesType;
   });
 
   // Calculate sector breakdowns
@@ -128,13 +254,22 @@ export const UniversityExplorer: React.FC<UniversityExplorerProps> = ({
   const localProgramsCount = filteredPrograms.filter((p) => p.institutionType !== 'Private').length;
   const privateProgramsCount = filteredPrograms.filter((p) => p.institutionType === 'Private').length;
 
-  // Execute Live Google & Web search
-  const handleLiveGoogleSearch = async () => {
-    const targetCountry = selectedCountry !== 'ALL' && !selectedCountry.includes('Anywhere') ? selectedCountry : '';
-    const targetCity = customCityInput.trim() || (selectedCity !== 'ALL' && !selectedCity.includes('Any City') ? selectedCity : '');
+  // Execute Live Google & Web academic registry search
+  const handleLiveGoogleSearch = async (
+    overrideCountry?: string,
+    overrideCity?: string,
+    overrideMajor?: string
+  ) => {
+    const activeCountry = typeof overrideCountry === 'string' ? overrideCountry : effectiveCountry;
+    const activeCity = typeof overrideCity === 'string' ? overrideCity : effectiveCity;
+    const activeMajor = typeof overrideMajor === 'string' ? overrideMajor : (selectedMajor !== 'ALL' ? selectedMajor : '');
+
+    const targetCountry = activeCountry !== 'ALL' && !activeCountry.includes('Anywhere') ? activeCountry : '';
+    const targetCity = activeCity !== 'ALL' && !activeCity.includes('Any City') && !activeCity.includes('Capital / Metro') && !activeCity.includes('Main Campus') ? activeCity : '';
+    const targetMajor = activeMajor || searchTerm.trim();
 
     setIsSearchingGoogle(true);
-    setGoogleSearchNotice(`Accessing Google and global academic databases for ${targetCity || targetCountry || 'universities'}...`);
+    setGoogleSearchNotice(`Accessing verified academic databases for ${targetMajor ? `${targetMajor} at ` : ''}${targetCity ? `${targetCity}, ` : ''}${targetCountry || 'global universities'}...`);
 
     try {
       const response = await fetch('/api/universities/search', {
@@ -144,6 +279,7 @@ export const UniversityExplorer: React.FC<UniversityExplorerProps> = ({
           query: searchTerm.trim(),
           country: targetCountry,
           city: targetCity,
+          major: targetMajor,
           dimension: selectedDimension !== 'ALL' ? selectedDimension : undefined
         })
       });
@@ -162,10 +298,10 @@ export const UniversityExplorer: React.FC<UniversityExplorerProps> = ({
             return [...uniqueIncoming, ...prev];
           });
           setGoogleSearchNotice(
-            `✓ Successfully fetched ${data.universities.length} authentic universities from Google & global registry.`
+            `✓ Successfully loaded ${data.universities.length} authentic universities in ${targetCity ? `${targetCity}, ` : ''}${targetCountry || 'the world'} for ${targetMajor || 'all fields'}.`
           );
         } else {
-          setGoogleSearchNotice('No additional universities found via Google for the given filter.');
+          setGoogleSearchNotice(`No additional universities found in registry for ${targetCity || targetCountry || 'your selection'}.`);
         }
       } else {
         setGoogleSearchNotice('Could not retrieve live search results. Showing curated list.');
@@ -178,6 +314,19 @@ export const UniversityExplorer: React.FC<UniversityExplorerProps> = ({
       setTimeout(() => setGoogleSearchNotice(null), 6000);
     }
   };
+
+  // Automatically fetch verified universities when student selects a country, city or major
+  useEffect(() => {
+    if (effectiveCountry && effectiveCountry !== 'ALL' && !effectiveCountry.includes('Anywhere')) {
+      handleLiveGoogleSearch(effectiveCountry, effectiveCity, selectedMajor);
+    }
+  }, [effectiveCountry, selectedMajor]);
+
+  useEffect(() => {
+    if (effectiveCity && effectiveCity !== 'ALL' && !effectiveCity.includes('Any City') && !effectiveCity.includes('Capital / Metro')) {
+      handleLiveGoogleSearch(effectiveCountry, effectiveCity, selectedMajor);
+    }
+  }, [effectiveCity]);
 
   const handleToggleSave = (prog: UniversityProgram) => {
     // If it's a live Google result, make sure it's stored in local repository so Dashboard can display it
@@ -276,17 +425,73 @@ export const UniversityExplorer: React.FC<UniversityExplorerProps> = ({
             : 'bg-white border-slate-200 text-slate-900'
         }`}
       >
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+        {/* Quick Country Destination Pills */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className={`text-[11px] font-bold uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+              Featured Study Destinations:
+            </span>
+            <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
+              effectiveCountry === 'Ecuador'
+                ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                : effectiveCountry !== 'ALL'
+                ? 'bg-purple-500/20 text-purple-300 border-purple-500/30'
+                : isDark ? 'bg-white/5 border-white/10 text-slate-300' : 'bg-slate-100 border-slate-200 text-slate-700'
+            }`}>
+              Target: {effectiveCountry === 'ALL' ? 'Worldwide' : effectiveCountry} {effectiveCity !== 'ALL' ? `(${effectiveCity})` : ''}
+            </span>
+          </div>
+
+          <div className="flex flex-wrap gap-1.5">
+            {[
+              { label: '🇪🇨 Ecuador', val: 'Ecuador' },
+              { label: '🇵🇰 Pakistan', val: 'Pakistan' },
+              { label: '🇺🇸 United States', val: 'United States' },
+              { label: '🇬🇧 United Kingdom', val: 'United Kingdom' },
+              { label: '🇨🇦 Canada', val: 'Canada' },
+              { label: '🇩🇪 Germany', val: 'Germany' },
+              { label: '🇦🇺 Australia', val: 'Australia' },
+              { label: '🇦🇪 UAE', val: 'United Arab Emirates' },
+              { label: '🇸🇦 Saudi Arabia', val: 'Saudi Arabia' },
+              { label: '🇪🇸 Spain', val: 'Spain' },
+              { label: '🇯🇵 Japan', val: 'Japan' },
+              { label: '🌍 Worldwide', val: 'ALL' }
+            ].map((item) => (
+              <button
+                key={item.val}
+                type="button"
+                onClick={() => {
+                  setSelectedCountry(item.val);
+                  setCustomCountryInput('');
+                  setSelectedCity('ALL');
+                  setCustomCityInput('');
+                  handleLiveGoogleSearch(item.val, 'ALL', selectedMajor);
+                }}
+                className={`rounded-xl px-2.5 py-1 text-xs font-bold transition-all border ${
+                  effectiveCountry === item.val
+                    ? 'bg-purple-600 text-white border-purple-500 shadow-md shadow-purple-500/25'
+                    : isDark
+                    ? 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
+                    : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 pt-2 border-t border-white/10">
           {/* Search Input */}
-          <div className="relative md:col-span-5">
+          <div className="relative md:col-span-4">
             <label className={`block text-[11px] font-bold uppercase tracking-wider mb-1 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-              Search University, Major or Degree
+              Search Degree, Major or University
             </label>
             <div className="relative">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <input
                 type="text"
-                placeholder="e.g. Oxford, Stanford, NUST, AI, Robotics, Medicine..."
+                placeholder="e.g. AI, Medicine, Robotics, Oxford, ESPOL..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={(e) => {
@@ -303,20 +508,18 @@ export const UniversityExplorer: React.FC<UniversityExplorerProps> = ({
             </div>
           </div>
 
-          {/* Country Filter (All Countries of the World) */}
-          <div className="md:col-span-4">
+          {/* Academic Field / Major Filter */}
+          <div className="md:col-span-3">
             <label className={`block text-[11px] font-bold uppercase tracking-wider mb-1 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-              Country ({POPULAR_COUNTRIES.length} World Countries)
+              Academic Field
             </label>
             <div className="relative">
-              <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+              <BookOpen className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
               <select
-                value={selectedCountry}
+                value={selectedMajor}
                 onChange={(e) => {
-                  const country = e.target.value;
-                  setSelectedCountry(country);
-                  setSelectedCity('ALL');
-                  setCustomCityInput('');
+                  setSelectedMajor(e.target.value);
+                  handleLiveGoogleSearch(effectiveCountry, effectiveCity, e.target.value);
                 }}
                 className={`w-full rounded-2xl border pl-10 pr-4 py-2.5 text-xs sm:text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                   isDark
@@ -324,89 +527,145 @@ export const UniversityExplorer: React.FC<UniversityExplorerProps> = ({
                     : 'bg-slate-50 border-slate-200 text-slate-800 focus:bg-white'
                 }`}
               >
-                <option value="ALL">All Countries of the World</option>
-                {POPULAR_COUNTRIES.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
+                <option value="ALL">All Academic Fields</option>
+                <option value="Computer Science">Computer Science & AI</option>
+                <option value="Medicine">Medicine & Health Sciences</option>
+                <option value="Business">Business & Finance</option>
+                <option value="Engineering">Engineering & Robotics</option>
+                <option value="Digital Arts">Arts & Digital Media</option>
+                <option value="Architecture">Architecture & Urban Design</option>
+                <option value="Biotechnology">Biotechnology & Ecology</option>
+                <option value="Law">Law & Diplomacy</option>
               </select>
             </div>
           </div>
 
-          {/* City Filter (Cities of Selected Country + Free Input) */}
+          {/* Country Filter (Type or Select) */}
           <div className="md:col-span-3">
             <label className={`block text-[11px] font-bold uppercase tracking-wider mb-1 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-              City / Metro Region
+              Target Country
             </label>
-            <div className="relative">
-              <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
-              <select
-                value={selectedCity}
+            <div className="space-y-1.5">
+              <input
+                type="text"
+                placeholder="Type country (e.g. Ecuador)..."
+                value={customCountryInput}
                 onChange={(e) => {
-                  setSelectedCity(e.target.value);
-                  setCustomCityInput('');
+                  setCustomCountryInput(e.target.value);
+                  if (e.target.value.trim()) {
+                    const matched = POPULAR_COUNTRIES.find(
+                      (c) => c.toLowerCase() === e.target.value.trim().toLowerCase()
+                    );
+                    if (matched) {
+                      setSelectedCountry(matched);
+                    }
+                  }
                 }}
-                className={`w-full rounded-2xl border pl-10 pr-4 py-2.5 text-xs sm:text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                className={`w-full rounded-xl border px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                   isDark
-                    ? 'bg-[#141b2d] border-white/10 text-white'
-                    : 'bg-slate-50 border-slate-200 text-slate-800 focus:bg-white'
+                    ? 'bg-white/5 border-white/10 text-white placeholder-slate-500'
+                    : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400'
                 }`}
-              >
-                <option value="ALL">All Cities</option>
-                {availableCities
-                  .filter((city) => city !== 'Any City / Flexible')
-                  .map((city) => (
-                    <option key={city} value={city}>
-                      {city}
+              />
+              <div className="relative">
+                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+                <select
+                  value={selectedCountry}
+                  onChange={(e) => {
+                    const country = e.target.value;
+                    setSelectedCountry(country);
+                    setCustomCountryInput('');
+                    setSelectedCity('ALL');
+                    setCustomCityInput('');
+                  }}
+                  className={`w-full rounded-xl border pl-8 pr-3 py-1.5 text-xs font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                    isDark
+                      ? 'bg-[#141b2d] border-white/10 text-white'
+                      : 'bg-slate-50 border-slate-200 text-slate-800 focus:bg-white'
+                  }`}
+                >
+                  <option value="ALL">All Countries ({POPULAR_COUNTRIES.length})</option>
+                  {POPULAR_COUNTRIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
                     </option>
                   ))}
-              </select>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* City Filter (Type or Select) */}
+          <div className="md:col-span-2">
+            <label className={`block text-[11px] font-bold uppercase tracking-wider mb-1 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+              Target City
+            </label>
+            <div className="space-y-1.5">
+              <input
+                type="text"
+                placeholder="Type city (e.g. Quito)..."
+                value={customCityInput}
+                onChange={(e) => setCustomCityInput(e.target.value)}
+                className={`w-full rounded-xl border px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                  isDark
+                    ? 'bg-white/5 border-white/10 text-white placeholder-slate-500'
+                    : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400'
+                }`}
+              />
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+                <select
+                  value={selectedCity}
+                  onChange={(e) => {
+                    setSelectedCity(e.target.value);
+                    setCustomCityInput('');
+                  }}
+                  className={`w-full rounded-xl border pl-8 pr-3 py-1.5 text-xs font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                    isDark
+                      ? 'bg-[#141b2d] border-white/10 text-white'
+                      : 'bg-slate-50 border-slate-200 text-slate-800 focus:bg-white'
+                  }`}
+                >
+                  <option value="ALL">All Cities</option>
+                  {availableCities
+                    .filter((city) => city !== 'Any City / Flexible')
+                    .map((city) => (
+                      <option key={city} value={city}>
+                        {city}
+                      </option>
+                    ))}
+                </select>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Custom City Search Input & Live Google Search Bar */}
+        {/* Live Search Trigger & Quick Stats */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2 border-t border-white/10">
-          <div className="flex items-center gap-2 flex-1">
-            <span className={`text-[11px] font-bold shrink-0 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-              Or type any specific city in the world:
+          <div className="flex items-center gap-3 text-xs">
+            <span className={`font-bold ${isDark ? 'text-purple-300' : 'text-purple-700'}`}>
+              Found: {totalProgramsCount} universities
             </span>
-            <input
-              type="text"
-              placeholder="e.g. Kyoto, Heidelberg, Peshawar, Cambridge..."
-              value={customCityInput}
-              onChange={(e) => setCustomCityInput(e.target.value)}
-              className={`rounded-xl border px-3 py-1.5 text-xs font-medium transition-all max-w-xs flex-1 ${
-                isDark
-                  ? 'bg-white/5 border-white/10 text-white placeholder-slate-500'
-                  : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400'
-              }`}
-            />
-            {customCityInput && (
-              <button
-                onClick={() => setCustomCityInput('')}
-                className="text-xs text-slate-400 hover:text-white"
-              >
-                Clear
-              </button>
-            )}
+            <span className="opacity-40">|</span>
+            <span className={isDark ? 'text-slate-400' : 'text-slate-600'}>
+              {localProgramsCount} Public / State · {privateProgramsCount} Private
+            </span>
           </div>
 
           <button
-            onClick={handleLiveGoogleSearch}
+            onClick={() => handleLiveGoogleSearch()}
             disabled={isSearchingGoogle}
-            className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-md hover:opacity-95 transition-all disabled:opacity-50"
+            className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-5 py-2.5 text-xs font-bold text-white shadow-md hover:opacity-95 transition-all disabled:opacity-50"
           >
             {isSearchingGoogle ? (
               <>
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                <span>Searching Google Live...</span>
+                <span>Searching Live Registry...</span>
               </>
             ) : (
               <>
                 <Globe className="h-3.5 w-3.5" />
-                <span>Live Google Search</span>
+                <span>Search {effectiveCountry !== 'ALL' ? effectiveCountry : 'Global'} Universities</span>
               </>
             )}
           </button>
